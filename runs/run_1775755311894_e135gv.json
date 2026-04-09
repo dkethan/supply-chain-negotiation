@@ -1,0 +1,225 @@
+{
+  "runId": "run_1775755311894_e135gv",
+  "startedAt": "2026-04-09T17:21:51.894Z",
+  "finishedAt": "2026-04-09T17:22:12.373Z",
+  "durationMs": 20479,
+  "config": {
+    "product": "Titanium Alloy",
+    "marketBasePrice": 200,
+    "agents": [
+      {
+        "role": "supplier",
+        "reservationPrice": 190
+      },
+      {
+        "role": "manufacturer",
+        "reservationPrice": 180
+      },
+      {
+        "role": "retailer",
+        "reservationPrice": 260
+      }
+    ],
+    "maxRoundsPerNegotiation": 8,
+    "marketNoiseRange": 0.15,
+    "toolFailureRate": 0.1
+  },
+  "negotiations": [
+    {
+      "pair": "supplier_manufacturer",
+      "events": [
+        {
+          "timestamp": "2026-04-09T17:21:53.858Z",
+          "runId": "run_1775755311894_e135gv",
+          "negotiation": "supplier_manufacturer",
+          "round": 1,
+          "agent": "supplier",
+          "action": "make_offer",
+          "price": 200,
+          "reservationPrice": 190,
+          "marketPriceSeen": 200.99,
+          "marketPriceActual": 200,
+          "margin": 10,
+          "reasoning": "Based on the current market price and demand, I'm offering Titanium Alloy at $200 per unit.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 2
+        },
+        {
+          "timestamp": "2026-04-09T17:21:55.366Z",
+          "runId": "run_1775755311894_e135gv",
+          "negotiation": "supplier_manufacturer",
+          "round": 2,
+          "agent": "manufacturer",
+          "action": "reject",
+          "reservationPrice": 180,
+          "reasoning": "Thank you for your offer, but $200 is above my maximum acceptable price. I'm looking for a better deal.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 3
+        },
+        {
+          "timestamp": "2026-04-09T17:21:58.015Z",
+          "runId": "run_1775755311894_e135gv",
+          "negotiation": "supplier_manufacturer",
+          "round": 3,
+          "agent": "supplier",
+          "action": "make_offer",
+          "price": 195,
+          "reservationPrice": 190,
+          "margin": 5,
+          "reasoning": "I appreciate your feedback. I'm willing to adjust my offer to $195 to facilitate a potential deal.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 4
+        },
+        {
+          "timestamp": "2026-04-09T17:21:59.067Z",
+          "runId": "run_1775755311894_e135gv",
+          "negotiation": "supplier_manufacturer",
+          "round": 4,
+          "agent": "manufacturer",
+          "action": "reject",
+          "reservationPrice": 180,
+          "reasoning": "Thank you for the revised offer, but $195 is still above my maximum acceptable price. I'm looking for a more competitive rate.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 5
+        },
+        {
+          "timestamp": "2026-04-09T17:22:01.152Z",
+          "runId": "run_1775755311894_e135gv",
+          "negotiation": "supplier_manufacturer",
+          "round": 5,
+          "agent": "supplier",
+          "action": "make_offer",
+          "price": 192,
+          "reservationPrice": 190,
+          "margin": 2,
+          "reasoning": "I understand the need for a competitive price. I'm willing to lower my offer to $192 to find common ground.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 6
+        },
+        {
+          "timestamp": "2026-04-09T17:22:02.349Z",
+          "runId": "run_1775755311894_e135gv",
+          "negotiation": "supplier_manufacturer",
+          "round": 6,
+          "agent": "manufacturer",
+          "action": "reject",
+          "reservationPrice": 180,
+          "reasoning": "I appreciate your willingness to negotiate, but $192 is still above my maximum acceptable price. I'm hoping for a lower offer.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 7
+        },
+        {
+          "timestamp": "2026-04-09T17:22:04.215Z",
+          "runId": "run_1775755311894_e135gv",
+          "negotiation": "supplier_manufacturer",
+          "round": 7,
+          "agent": "supplier",
+          "action": "make_offer",
+          "price": 190,
+          "reservationPrice": 190,
+          "margin": 0,
+          "reasoning": "I value your interest in our product. I'm willing to meet you at my minimum acceptable price of $190 to finalize this deal.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 8
+        },
+        {
+          "timestamp": "2026-04-09T17:22:05.300Z",
+          "runId": "run_1775755311894_e135gv",
+          "negotiation": "supplier_manufacturer",
+          "round": 8,
+          "agent": "manufacturer",
+          "action": "reject",
+          "reservationPrice": 180,
+          "reasoning": "Thank you for the offer, but $190 is still above my maximum acceptable price. I need to see a lower price to continue negotiations.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 9
+        }
+      ],
+      "outcome": "timeout",
+      "rounds": 8,
+      "agentA": "supplier",
+      "agentB": "manufacturer"
+    },
+    {
+      "pair": "manufacturer_retailer",
+      "events": [
+        {
+          "timestamp": "2026-04-09T17:22:07.682Z",
+          "runId": "run_1775755311894_e135gv",
+          "negotiation": "manufacturer_retailer",
+          "round": 1,
+          "agent": "manufacturer",
+          "action": "make_offer",
+          "price": 300,
+          "reservationPrice": 250,
+          "marketPriceSeen": 332.99,
+          "marketPriceActual": 300,
+          "margin": -50,
+          "reasoning": "Given the market price for Titanium Alloy is around $332.99 and my cost basis is $200.00, I am offering a price of $300.00 to ensure a reasonable margin while remaining competitive.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 2
+        },
+        {
+          "timestamp": "2026-04-09T17:22:08.724Z",
+          "runId": "run_1775755311894_e135gv",
+          "negotiation": "manufacturer_retailer",
+          "round": 2,
+          "agent": "retailer",
+          "action": "reject",
+          "reservationPrice": 260,
+          "reasoning": "Your offer of $300.00 is above my maximum acceptable price. I need to negotiate for a better deal to maintain retail margins.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 3
+        },
+        {
+          "timestamp": "2026-04-09T17:22:10.218Z",
+          "runId": "run_1775755311894_e135gv",
+          "negotiation": "manufacturer_retailer",
+          "round": 3,
+          "agent": "manufacturer",
+          "action": "make_offer",
+          "price": 275,
+          "reservationPrice": 250,
+          "margin": -25,
+          "reasoning": "I understand your concerns regarding retail margins. However, my costs and the current market price necessitate a minimum offer of $275.00 for Titanium Alloy.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 4
+        },
+        {
+          "timestamp": "2026-04-09T17:22:11.299Z",
+          "runId": "run_1775755311894_e135gv",
+          "negotiation": "manufacturer_retailer",
+          "round": 4,
+          "agent": "retailer",
+          "action": "reject",
+          "reservationPrice": 260,
+          "reasoning": "While I appreciate your position, $275.00 is still too high for my retail margins. I need to stay below my maximum price of $260.00.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 5
+        },
+        {
+          "timestamp": "2026-04-09T17:22:12.372Z",
+          "runId": "run_1775755311894_e135gv",
+          "negotiation": "manufacturer_retailer",
+          "round": 5,
+          "agent": "manufacturer",
+          "action": "walk_away",
+          "reservationPrice": 250,
+          "reasoning": "I appreciate your position, but my minimum acceptable price is $250.00. I cannot proceed with the negotiation at a price below that.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 6
+        }
+      ],
+      "outcome": "walk_away",
+      "rounds": 5,
+      "agentA": "manufacturer",
+      "agentB": "retailer"
+    }
+  ],
+  "overallOutcome": "failure",
+  "failureDiagnosis": {
+    "type": "systemic",
+    "description": "No deal was possible: supplier's minimum ($190.00) exceeds manufacturer's maximum ($180.00). The price gap of $10.00 makes any deal impossible.",
+    "priceGap": 10
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "runId": "run_1775756228364_yu003j",
+  "startedAt": "2026-04-09T17:37:08.364Z",
+  "finishedAt": "2026-04-09T17:37:13.797Z",
+  "durationMs": 5433,
+  "config": {
+    "product": "Steel Coils",
+    "marketBasePrice": 50,
+    "agents": [
+      {
+        "role": "supplier",
+        "reservationPrice": 35
+      },
+      {
+        "role": "manufacturer",
+        "reservationPrice": 60
+      },
+      {
+        "role": "retailer",
+        "reservationPrice": 95
+      }
+    ],
+    "maxRoundsPerNegotiation": 10,
+    "marketNoiseRange": 0.08,
+    "toolFailureRate": 0
+  },
+  "negotiations": [
+    {
+      "pair": "supplier_manufacturer",
+      "events": [
+        {
+          "timestamp": "2026-04-09T17:37:09.864Z",
+          "runId": "run_1775756228364_yu003j",
+          "negotiation": "supplier_manufacturer",
+          "round": 1,
+          "agent": "supplier",
+          "action": "make_offer",
+          "price": 42,
+          "reservationPrice": 35,
+          "margin": 7,
+          "reasoning": "I am offering $42 per steel coil, reflecting the quality of our materials and current market conditions.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 2
+        },
+        {
+          "timestamp": "2026-04-09T17:37:11.348Z",
+          "runId": "run_1775756228364_yu003j",
+          "negotiation": "supplier_manufacturer",
+          "round": 2,
+          "agent": "manufacturer",
+          "action": "accept",
+          "reservationPrice": 60,
+          "reasoning": "I appreciate your offer of $42 per steel coil. Given the quality of your materials and market conditions, I believe this is a fair deal. Let's finalize the agreement.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 3
+        }
+      ],
+      "outcome": "deal",
+      "finalPrice": 42,
+      "rounds": 2,
+      "agentA": "supplier",
+      "agentB": "manufacturer"
+    },
+    {
+      "pair": "manufacturer_retailer",
+      "events": [
+        {
+          "timestamp": "2026-04-09T17:37:12.719Z",
+          "runId": "run_1775756228364_yu003j",
+          "negotiation": "manufacturer_retailer",
+          "round": 1,
+          "agent": "manufacturer",
+          "action": "make_offer",
+          "price": 65,
+          "reservationPrice": 58.8,
+          "margin": -6.200000000000003,
+          "reasoning": "Given my costs and the current market dynamics, I'm offering a price of $65.00 for the steel coils. This ensures a fair margin while providing you with quality products.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 2
+        },
+        {
+          "timestamp": "2026-04-09T17:37:13.796Z",
+          "runId": "run_1775756228364_yu003j",
+          "negotiation": "manufacturer_retailer",
+          "round": 2,
+          "agent": "retailer",
+          "action": "accept",
+          "reservationPrice": 95,
+          "reasoning": "I appreciate your offer of $65.00 and I believe it aligns well with our needs. Let's proceed with this deal.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 3
+        }
+      ],
+      "outcome": "deal",
+      "finalPrice": 65,
+      "rounds": 2,
+      "agentA": "manufacturer",
+      "agentB": "retailer"
+    }
+  ],
+  "overallOutcome": "success",
+  "failureDiagnosis": {
+    "type": null,
+    "description": "All negotiations succeeded."
+  }
+}

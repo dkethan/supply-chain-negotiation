@@ -1,0 +1,186 @@
+{
+  "runId": "run_1775756234801_j9l7jg",
+  "startedAt": "2026-04-09T17:37:14.801Z",
+  "finishedAt": "2026-04-09T17:37:27.569Z",
+  "durationMs": 12768,
+  "config": {
+    "product": "Copper Wire",
+    "marketBasePrice": 100,
+    "agents": [
+      {
+        "role": "supplier",
+        "reservationPrice": 90
+      },
+      {
+        "role": "manufacturer",
+        "reservationPrice": 105
+      },
+      {
+        "role": "retailer",
+        "reservationPrice": 140
+      }
+    ],
+    "maxRoundsPerNegotiation": 10,
+    "marketNoiseRange": 0.12,
+    "toolFailureRate": 0.05
+  },
+  "negotiations": [
+    {
+      "pair": "supplier_manufacturer",
+      "events": [
+        {
+          "timestamp": "2026-04-09T17:37:15.858Z",
+          "runId": "run_1775756234801_j9l7jg",
+          "negotiation": "supplier_manufacturer",
+          "round": 1,
+          "agent": "supplier",
+          "action": "make_offer",
+          "price": 108,
+          "reservationPrice": 90,
+          "margin": 18,
+          "reasoning": "I am offering $108 for the copper wire, reflecting its quality and current market conditions.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 2
+        },
+        {
+          "timestamp": "2026-04-09T17:37:16.798Z",
+          "runId": "run_1775756234801_j9l7jg",
+          "negotiation": "supplier_manufacturer",
+          "round": 2,
+          "agent": "manufacturer",
+          "action": "reject",
+          "reservationPrice": 105,
+          "reasoning": "The offered price of $108 is above my maximum acceptable price. I would like to negotiate further.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 3
+        },
+        {
+          "timestamp": "2026-04-09T17:37:18.151Z",
+          "runId": "run_1775756234801_j9l7jg",
+          "negotiation": "supplier_manufacturer",
+          "round": 3,
+          "agent": "supplier",
+          "action": "make_offer",
+          "price": 102,
+          "reservationPrice": 90,
+          "margin": 12,
+          "reasoning": "I understand your constraints. I'm offering a revised price of $102 for the copper wire, which still reflects its quality.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 4
+        },
+        {
+          "timestamp": "2026-04-09T17:37:19.283Z",
+          "runId": "run_1775756234801_j9l7jg",
+          "negotiation": "supplier_manufacturer",
+          "round": 4,
+          "agent": "manufacturer",
+          "action": "accept",
+          "reservationPrice": 105,
+          "reasoning": "I appreciate your willingness to adjust the price. I accept the offer of $102 for the copper wire.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 5
+        }
+      ],
+      "outcome": "deal",
+      "finalPrice": 102,
+      "rounds": 4,
+      "agentA": "supplier",
+      "agentB": "manufacturer"
+    },
+    {
+      "pair": "manufacturer_retailer",
+      "events": [
+        {
+          "timestamp": "2026-04-09T17:37:20.612Z",
+          "runId": "run_1775756234801_j9l7jg",
+          "negotiation": "manufacturer_retailer",
+          "round": 1,
+          "agent": "manufacturer",
+          "action": "make_offer",
+          "price": 150,
+          "reservationPrice": 132.6,
+          "margin": -17.400000000000006,
+          "reasoning": "Given the quality of our copper wire and current market conditions, I am offering a price of $150 per unit.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 2
+        },
+        {
+          "timestamp": "2026-04-09T17:37:22.049Z",
+          "runId": "run_1775756234801_j9l7jg",
+          "negotiation": "manufacturer_retailer",
+          "round": 2,
+          "agent": "retailer",
+          "action": "reject",
+          "reservationPrice": 140,
+          "reasoning": "The offered price of $150 is above my maximum acceptable price of $140. I believe we can negotiate further.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 3
+        },
+        {
+          "timestamp": "2026-04-09T17:37:24.075Z",
+          "runId": "run_1775756234801_j9l7jg",
+          "negotiation": "manufacturer_retailer",
+          "round": 3,
+          "agent": "manufacturer",
+          "action": "make_offer",
+          "price": 145,
+          "reservationPrice": 132.6,
+          "marketPriceSeen": 135.39,
+          "marketPriceActual": 145,
+          "margin": -12.400000000000006,
+          "reasoning": "Considering the market price and our quality, I am adjusting my offer to $145 per unit to find a middle ground.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 4
+        },
+        {
+          "timestamp": "2026-04-09T17:37:25.063Z",
+          "runId": "run_1775756234801_j9l7jg",
+          "negotiation": "manufacturer_retailer",
+          "round": 4,
+          "agent": "retailer",
+          "action": "reject",
+          "reservationPrice": 140,
+          "reasoning": "The offered price of $145 is still above my maximum acceptable price of $140. I hope we can reach a more favorable offer.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 5
+        },
+        {
+          "timestamp": "2026-04-09T17:37:26.404Z",
+          "runId": "run_1775756234801_j9l7jg",
+          "negotiation": "manufacturer_retailer",
+          "round": 5,
+          "agent": "manufacturer",
+          "action": "make_offer",
+          "price": 140,
+          "reservationPrice": 132.6,
+          "margin": -7.400000000000006,
+          "reasoning": "To keep the negotiation moving forward, I am willing to offer $140 per unit, which is my limit.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 6
+        },
+        {
+          "timestamp": "2026-04-09T17:37:27.569Z",
+          "runId": "run_1775756234801_j9l7jg",
+          "negotiation": "manufacturer_retailer",
+          "round": 6,
+          "agent": "retailer",
+          "action": "accept",
+          "reservationPrice": 140,
+          "reasoning": "I accept the offer of $140 per unit as it meets my maximum acceptable price.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 7
+        }
+      ],
+      "outcome": "deal",
+      "finalPrice": 140,
+      "rounds": 6,
+      "agentA": "manufacturer",
+      "agentB": "retailer"
+    }
+  ],
+  "overallOutcome": "success",
+  "failureDiagnosis": {
+    "type": null,
+    "description": "All negotiations succeeded."
+  }
+}

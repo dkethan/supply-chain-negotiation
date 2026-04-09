@@ -1,0 +1,237 @@
+{
+  "runId": "run_1775755275638_xbt6ov",
+  "startedAt": "2026-04-09T17:21:15.638Z",
+  "finishedAt": "2026-04-09T17:21:36.454Z",
+  "durationMs": 20816,
+  "config": {
+    "product": "Steel Coils",
+    "marketBasePrice": 50,
+    "agents": [
+      {
+        "role": "supplier",
+        "reservationPrice": 35
+      },
+      {
+        "role": "manufacturer",
+        "reservationPrice": 60
+      },
+      {
+        "role": "retailer",
+        "reservationPrice": 95
+      }
+    ],
+    "maxRoundsPerNegotiation": 10,
+    "marketNoiseRange": 0.08,
+    "toolFailureRate": 0
+  },
+  "negotiations": [
+    {
+      "pair": "supplier_manufacturer",
+      "events": [
+        {
+          "timestamp": "2026-04-09T17:21:18.289Z",
+          "runId": "run_1775755275638_xbt6ov",
+          "negotiation": "supplier_manufacturer",
+          "round": 1,
+          "agent": "supplier",
+          "action": "make_offer",
+          "price": 45,
+          "reservationPrice": 35,
+          "marketPriceSeen": 49.21,
+          "marketPriceActual": 50,
+          "margin": 10,
+          "reasoning": "Based on current market conditions, I'm offering the Steel Coils at $45. This reflects both quality and market demand.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 2
+        },
+        {
+          "timestamp": "2026-04-09T17:21:20.170Z",
+          "runId": "run_1775755275638_xbt6ov",
+          "negotiation": "supplier_manufacturer",
+          "round": 2,
+          "agent": "manufacturer",
+          "action": "reject",
+          "reservationPrice": 60,
+          "reasoning": "Thank you for your offer, but I believe we can negotiate a better price. I'm looking for a lower price to maximize my margins.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 3
+        },
+        {
+          "timestamp": "2026-04-09T17:21:21.415Z",
+          "runId": "run_1775755275638_xbt6ov",
+          "negotiation": "supplier_manufacturer",
+          "round": 3,
+          "agent": "supplier",
+          "action": "make_offer",
+          "price": 42,
+          "reservationPrice": 35,
+          "margin": 7,
+          "reasoning": "I appreciate your feedback. To continue our negotiation, I can offer the Steel Coils at $42, which is still competitive in the current market.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 4
+        },
+        {
+          "timestamp": "2026-04-09T17:21:22.871Z",
+          "runId": "run_1775755275638_xbt6ov",
+          "negotiation": "supplier_manufacturer",
+          "round": 4,
+          "agent": "manufacturer",
+          "action": "reject",
+          "reservationPrice": 60,
+          "reasoning": "Thank you for the revised offer, but I am looking to secure a better deal. I would like to propose a counteroffer.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 5
+        },
+        {
+          "timestamp": "2026-04-09T17:21:24.755Z",
+          "runId": "run_1775755275638_xbt6ov",
+          "negotiation": "supplier_manufacturer",
+          "round": 5,
+          "agent": "supplier",
+          "action": "make_offer",
+          "price": 40,
+          "reservationPrice": 35,
+          "margin": 5,
+          "reasoning": "I understand your position, and I'm willing to adjust my offer to $40. I believe this is a fair price considering the quality of the Steel Coils.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 6
+        },
+        {
+          "timestamp": "2026-04-09T17:21:26.090Z",
+          "runId": "run_1775755275638_xbt6ov",
+          "negotiation": "supplier_manufacturer",
+          "round": 6,
+          "agent": "manufacturer",
+          "action": "reject",
+          "reservationPrice": 60,
+          "reasoning": "I appreciate your willingness to adjust the price, but I'm still aiming for a lower offer to enhance my margins further. Let's continue negotiating.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 7
+        },
+        {
+          "timestamp": "2026-04-09T17:21:27.007Z",
+          "runId": "run_1775755275638_xbt6ov",
+          "negotiation": "supplier_manufacturer",
+          "round": 7,
+          "agent": "supplier",
+          "action": "walk_away",
+          "reservationPrice": 35,
+          "reasoning": "I respect your position, but I must walk away from this negotiation as my minimum acceptable price is not being met.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 8
+        }
+      ],
+      "outcome": "walk_away",
+      "rounds": 7,
+      "agentA": "supplier",
+      "agentB": "manufacturer"
+    },
+    {
+      "pair": "manufacturer_retailer",
+      "events": [
+        {
+          "timestamp": "2026-04-09T17:21:29.259Z",
+          "runId": "run_1775755275638_xbt6ov",
+          "negotiation": "manufacturer_retailer",
+          "round": 1,
+          "agent": "manufacturer",
+          "action": "make_offer",
+          "price": 80,
+          "reservationPrice": 65,
+          "marketPriceSeen": 81.44,
+          "marketPriceActual": 77.49999999999999,
+          "margin": -15,
+          "reasoning": "Given the current market price of $81.44, I am offering $80.00 per unit for the Steel Coils. This price reflects both quality and current market conditions.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 2
+        },
+        {
+          "timestamp": "2026-04-09T17:21:30.227Z",
+          "runId": "run_1775755275638_xbt6ov",
+          "negotiation": "manufacturer_retailer",
+          "round": 2,
+          "agent": "retailer",
+          "action": "reject",
+          "reservationPrice": 95,
+          "reasoning": "While I appreciate the offer, I need to negotiate further to ensure I can maintain my retail margins.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 3
+        },
+        {
+          "timestamp": "2026-04-09T17:21:31.395Z",
+          "runId": "run_1775755275638_xbt6ov",
+          "negotiation": "manufacturer_retailer",
+          "round": 3,
+          "agent": "manufacturer",
+          "action": "make_offer",
+          "price": 78,
+          "reservationPrice": 65,
+          "margin": -13,
+          "reasoning": "I understand your need to maintain margins, and I'm willing to offer $78.00 per unit. This is a competitive price considering the market conditions.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 4
+        },
+        {
+          "timestamp": "2026-04-09T17:21:32.987Z",
+          "runId": "run_1775755275638_xbt6ov",
+          "negotiation": "manufacturer_retailer",
+          "round": 4,
+          "agent": "retailer",
+          "action": "reject",
+          "reservationPrice": 95,
+          "reasoning": "Thank you for the revised offer, but I still need a lower price to ensure profitability in my retail operations.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 5
+        },
+        {
+          "timestamp": "2026-04-09T17:21:34.316Z",
+          "runId": "run_1775755275638_xbt6ov",
+          "negotiation": "manufacturer_retailer",
+          "round": 5,
+          "agent": "manufacturer",
+          "action": "make_offer",
+          "price": 76,
+          "reservationPrice": 65,
+          "margin": -11,
+          "reasoning": "I appreciate your position and am willing to adjust my offer to $76.00 per unit. This reflects my commitment to finding a mutually beneficial agreement.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 6
+        },
+        {
+          "timestamp": "2026-04-09T17:21:35.367Z",
+          "runId": "run_1775755275638_xbt6ov",
+          "negotiation": "manufacturer_retailer",
+          "round": 6,
+          "agent": "retailer",
+          "action": "reject",
+          "reservationPrice": 95,
+          "reasoning": "Thank you for your flexibility, but I still require a lower price to ensure sustainable margins for my retail business.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 7
+        },
+        {
+          "timestamp": "2026-04-09T17:21:36.453Z",
+          "runId": "run_1775755275638_xbt6ov",
+          "negotiation": "manufacturer_retailer",
+          "round": 7,
+          "agent": "manufacturer",
+          "action": "walk_away",
+          "reservationPrice": 65,
+          "reasoning": "I must walk away from this negotiation as the offers being discussed do not meet my minimum acceptable price. Thank you for your time.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 8
+        }
+      ],
+      "outcome": "walk_away",
+      "rounds": 7,
+      "agentA": "manufacturer",
+      "agentB": "retailer"
+    }
+  ],
+  "overallOutcome": "failure",
+  "failureDiagnosis": {
+    "type": "single_agent_decision",
+    "description": "supplier walked away in round 7. A deal was still possible — this may have been premature.",
+    "agent": "supplier"
+  }
+}

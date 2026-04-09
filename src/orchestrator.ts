@@ -13,11 +13,9 @@ import type {
   NegotiationEvent,
   NegotiationPair,
   NegotiationResult,
-  NegotiationOutcome,
   RunConfig,
   RunOutput,
   FailureDiagnosis,
-  FailureType,
 } from "./types.js";
 
 interface NegotiationSetup {
@@ -33,10 +31,9 @@ async function runNegotiation(
   runId: string,
   maxRounds: number
 ): Promise<NegotiationResult> {
-  return logfire.span(
-    `negotiation`,
-    { pair: setup.pair, agentA: setup.roleA, agentB: setup.roleB, maxRounds },
-    async () => {
+  return logfire.span(`negotiation`, {
+    attributes: { pair: setup.pair, agentA: setup.roleA, agentB: setup.roleB, maxRounds },
+    callback: async () => {
   const { pair, agentA, agentB, roleA, roleB } = setup;
   const events: NegotiationEvent[] = [];
 
@@ -73,11 +70,10 @@ async function runNegotiation(
 
     console.log(`  [Round ${round}] ${agentRole}'s turn...`);
 
-    const { action, event } = await logfire.span(
-      `turn`,
-      { round, agent: agentRole, pair, negotiation: pair },
-      () => agent.takeTurn(round, situation, runId, pair)
-    );
+    const { action, event } = await logfire.span(`turn`, {
+      attributes: { round, agent: agentRole, pair },
+      callback: () => agent.takeTurn(round, situation, runId, pair),
+    });
 
     events.push(event);
 
@@ -149,6 +145,7 @@ async function runNegotiation(
     agentA: roleA,
     agentB: roleB,
   };
+  },
   }); // end logfire.span('negotiation')
 }
 
@@ -172,7 +169,7 @@ function buildMessageForOther(
 
 function diagnoseFailure(
   negotiations: NegotiationResult[],
-  config: RunConfig
+  _config: RunConfig
 ): FailureDiagnosis {
   const allSucceeded = negotiations.every((n) => n.outcome === "deal");
   if (allSucceeded) {

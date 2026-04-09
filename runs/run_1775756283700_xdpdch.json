@@ -1,0 +1,160 @@
+{
+  "runId": "run_1775756283700_xdpdch",
+  "startedAt": "2026-04-09T17:38:03.700Z",
+  "finishedAt": "2026-04-09T17:38:13.992Z",
+  "durationMs": 10292,
+  "config": {
+    "product": "Carbon Fiber",
+    "marketBasePrice": 150,
+    "agents": [
+      {
+        "role": "supplier",
+        "reservationPrice": 130
+      },
+      {
+        "role": "manufacturer",
+        "reservationPrice": 165
+      },
+      {
+        "role": "retailer",
+        "reservationPrice": 195
+      }
+    ],
+    "maxRoundsPerNegotiation": 10,
+    "marketNoiseRange": 0.1,
+    "toolFailureRate": 0.05
+  },
+  "negotiations": [
+    {
+      "pair": "supplier_manufacturer",
+      "events": [
+        {
+          "timestamp": "2026-04-09T17:38:04.993Z",
+          "runId": "run_1775756283700_xdpdch",
+          "negotiation": "supplier_manufacturer",
+          "round": 1,
+          "agent": "supplier",
+          "action": "make_offer",
+          "price": 156,
+          "reservationPrice": 130,
+          "margin": 26,
+          "reasoning": "I'm offering carbon fiber at $156 per unit, reflecting its high quality and current market demand.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 2
+        },
+        {
+          "timestamp": "2026-04-09T17:38:05.980Z",
+          "runId": "run_1775756283700_xdpdch",
+          "negotiation": "supplier_manufacturer",
+          "round": 2,
+          "agent": "manufacturer",
+          "action": "accept",
+          "reservationPrice": 165,
+          "reasoning": "I appreciate your offer of $156.00 per unit and would like to proceed with this deal.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 3
+        }
+      ],
+      "outcome": "deal",
+      "finalPrice": 156,
+      "rounds": 2,
+      "agentA": "supplier",
+      "agentB": "manufacturer"
+    },
+    {
+      "pair": "manufacturer_retailer",
+      "events": [
+        {
+          "timestamp": "2026-04-09T17:38:07.090Z",
+          "runId": "run_1775756283700_xdpdch",
+          "negotiation": "manufacturer_retailer",
+          "round": 1,
+          "agent": "manufacturer",
+          "action": "make_offer",
+          "price": 220,
+          "reservationPrice": 195,
+          "margin": -25,
+          "reasoning": "Given the quality of our carbon fiber and current market conditions, I am offering a price of $220 per unit.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 2
+        },
+        {
+          "timestamp": "2026-04-09T17:38:07.936Z",
+          "runId": "run_1775756283700_xdpdch",
+          "negotiation": "manufacturer_retailer",
+          "round": 2,
+          "agent": "retailer",
+          "action": "reject",
+          "reservationPrice": 195,
+          "reasoning": "The price of $220 is above my maximum acceptable price of $195. I need a more competitive offer.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 3
+        },
+        {
+          "timestamp": "2026-04-09T17:38:10.227Z",
+          "runId": "run_1775756283700_xdpdch",
+          "negotiation": "manufacturer_retailer",
+          "round": 3,
+          "agent": "manufacturer",
+          "action": "make_offer",
+          "price": 200,
+          "reservationPrice": 195,
+          "marketPriceSeen": 195.96,
+          "marketPriceActual": 210,
+          "margin": -5,
+          "reasoning": "I understand your concerns. Given the current market price of $195.96, I can offer a revised price of $200 per unit, which reflects both quality and competitiveness.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 4
+        },
+        {
+          "timestamp": "2026-04-09T17:38:11.244Z",
+          "runId": "run_1775756283700_xdpdch",
+          "negotiation": "manufacturer_retailer",
+          "round": 4,
+          "agent": "retailer",
+          "action": "reject",
+          "reservationPrice": 195,
+          "reasoning": "While I appreciate the adjustment, $200 is still above my maximum acceptable price of $195. I'm looking for a better offer.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 5
+        },
+        {
+          "timestamp": "2026-04-09T17:38:12.794Z",
+          "runId": "run_1775756283700_xdpdch",
+          "negotiation": "manufacturer_retailer",
+          "round": 5,
+          "agent": "manufacturer",
+          "action": "make_offer",
+          "price": 195,
+          "reservationPrice": 195,
+          "margin": 0,
+          "reasoning": "To accommodate your budget, I am willing to accept your maximum price of $195 per unit. This ensures we can move forward with this deal.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 6
+        },
+        {
+          "timestamp": "2026-04-09T17:38:13.992Z",
+          "runId": "run_1775756283700_xdpdch",
+          "negotiation": "manufacturer_retailer",
+          "round": 6,
+          "agent": "retailer",
+          "action": "accept",
+          "reservationPrice": 195,
+          "reasoning": "I accept the offer of $195.00, as it meets my maximum acceptable price.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 7
+        }
+      ],
+      "outcome": "deal",
+      "finalPrice": 195,
+      "rounds": 6,
+      "agentA": "manufacturer",
+      "agentB": "retailer"
+    }
+  ],
+  "overallOutcome": "success",
+  "failureDiagnosis": {
+    "type": null,
+    "description": "All negotiations succeeded."
+  }
+}

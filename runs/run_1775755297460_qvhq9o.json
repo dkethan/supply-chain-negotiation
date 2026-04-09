@@ -1,0 +1,178 @@
+{
+  "runId": "run_1775755297460_qvhq9o",
+  "startedAt": "2026-04-09T17:21:37.460Z",
+  "finishedAt": "2026-04-09T17:21:50.892Z",
+  "durationMs": 13432,
+  "config": {
+    "product": "Copper Wire",
+    "marketBasePrice": 100,
+    "agents": [
+      {
+        "role": "supplier",
+        "reservationPrice": 90
+      },
+      {
+        "role": "manufacturer",
+        "reservationPrice": 105
+      },
+      {
+        "role": "retailer",
+        "reservationPrice": 140
+      }
+    ],
+    "maxRoundsPerNegotiation": 10,
+    "marketNoiseRange": 0.12,
+    "toolFailureRate": 0.05
+  },
+  "negotiations": [
+    {
+      "pair": "supplier_manufacturer",
+      "events": [
+        {
+          "timestamp": "2026-04-09T17:21:39.605Z",
+          "runId": "run_1775755297460_qvhq9o",
+          "negotiation": "supplier_manufacturer",
+          "round": 1,
+          "agent": "supplier",
+          "action": "make_offer",
+          "price": 100,
+          "reservationPrice": 90,
+          "marketPriceSeen": 99.74,
+          "marketPriceActual": 100,
+          "margin": 10,
+          "reasoning": "I'm starting with an offer of $100 for the copper wire, which is competitive based on the current market price.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 2
+        },
+        {
+          "timestamp": "2026-04-09T17:21:41.011Z",
+          "runId": "run_1775755297460_qvhq9o",
+          "negotiation": "supplier_manufacturer",
+          "round": 2,
+          "agent": "manufacturer",
+          "action": "make_offer",
+          "price": 95,
+          "reservationPrice": 105,
+          "margin": 10,
+          "reasoning": "I appreciate your offer of $100, but I believe $95 is a more competitive price given the current market conditions.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 3
+        },
+        {
+          "timestamp": "2026-04-09T17:21:42.067Z",
+          "runId": "run_1775755297460_qvhq9o",
+          "negotiation": "supplier_manufacturer",
+          "round": 3,
+          "agent": "supplier",
+          "action": "reject",
+          "reservationPrice": 90,
+          "reasoning": "While I appreciate your offer of $95, it's below my minimum acceptable price. I would like to propose a counter offer.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 4
+        },
+        {
+          "timestamp": "2026-04-09T17:21:44.311Z",
+          "runId": "run_1775755297460_qvhq9o",
+          "negotiation": "supplier_manufacturer",
+          "round": 4,
+          "agent": "manufacturer",
+          "action": "make_offer",
+          "price": 99,
+          "reservationPrice": 105,
+          "marketPriceSeen": 102.34,
+          "marketPriceActual": 100,
+          "margin": 6,
+          "reasoning": "Thank you for your response. Based on the current market price of $102.34, I would like to propose an offer of $99.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 5
+        },
+        {
+          "timestamp": "2026-04-09T17:21:45.328Z",
+          "runId": "run_1775755297460_qvhq9o",
+          "negotiation": "supplier_manufacturer",
+          "round": 5,
+          "agent": "supplier",
+          "action": "accept",
+          "reservationPrice": 90,
+          "reasoning": "I appreciate your offer of $99.00 and am happy to accept it as it is a fair price.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 6
+        }
+      ],
+      "outcome": "deal",
+      "finalPrice": 99,
+      "rounds": 5,
+      "agentA": "supplier",
+      "agentB": "manufacturer"
+    },
+    {
+      "pair": "manufacturer_retailer",
+      "events": [
+        {
+          "timestamp": "2026-04-09T17:21:46.543Z",
+          "runId": "run_1775755297460_qvhq9o",
+          "negotiation": "manufacturer_retailer",
+          "round": 1,
+          "agent": "manufacturer",
+          "action": "make_offer",
+          "price": 145,
+          "reservationPrice": 128.70000000000002,
+          "margin": -16.299999999999983,
+          "reasoning": "Given the quality of our copper wire and current market conditions, I am offering a price of $145 per unit to ensure we maintain a sustainable margin.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 2
+        },
+        {
+          "timestamp": "2026-04-09T17:21:47.524Z",
+          "runId": "run_1775755297460_qvhq9o",
+          "negotiation": "manufacturer_retailer",
+          "round": 2,
+          "agent": "retailer",
+          "action": "reject",
+          "reservationPrice": 140,
+          "reasoning": "Thank you for your offer, but $145 exceeds my budget. I need a more competitive price to proceed.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 3
+        },
+        {
+          "timestamp": "2026-04-09T17:21:49.796Z",
+          "runId": "run_1775755297460_qvhq9o",
+          "negotiation": "manufacturer_retailer",
+          "round": 3,
+          "agent": "manufacturer",
+          "action": "make_offer",
+          "price": 140,
+          "reservationPrice": 128.70000000000002,
+          "marketPriceSeen": 161.18,
+          "marketPriceActual": 145,
+          "margin": -11.299999999999983,
+          "reasoning": "I understand the need for a competitive price. Based on current market conditions, I'm offering $140 per unit, which balances both our needs while still ensuring quality.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 4
+        },
+        {
+          "timestamp": "2026-04-09T17:21:50.892Z",
+          "runId": "run_1775755297460_qvhq9o",
+          "negotiation": "manufacturer_retailer",
+          "round": 4,
+          "agent": "retailer",
+          "action": "accept",
+          "reservationPrice": 140,
+          "reasoning": "I appreciate your offer of $140.00 per unit and agree to close the deal at this price.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 5
+        }
+      ],
+      "outcome": "deal",
+      "finalPrice": 140,
+      "rounds": 4,
+      "agentA": "manufacturer",
+      "agentB": "retailer"
+    }
+  ],
+  "overallOutcome": "success",
+  "failureDiagnosis": {
+    "type": null,
+    "description": "All negotiations succeeded."
+  }
+}

@@ -53,18 +53,16 @@ export class Agent {
     runId: string,
     negotiation: NegotiationPair
   ): Promise<{ action: AgentAction; event: NegotiationEvent }> {
-    return logfire.span(
-      `agent.turn`,
-      { role: this.role, round: roundNumber, negotiation },
-      async () => {
+    return logfire.span(`agent.turn`, {
+      attributes: { role: this.role, round: roundNumber, negotiation },
+      callback: async () => {
         // Add the situation update as a user message
         this.messages.push({ role: "user", content: situationUpdate });
 
         // Call OpenAI with tools
-        const response = await logfire.span(
-          `llm_call`,
-          { model: "gpt-4o-mini", round: roundNumber, role: this.role, purpose: "decide_action" },
-          () =>
+        const response = await logfire.span(`llm_call`, {
+          attributes: { model: "gpt-4o-mini", round: roundNumber, role: this.role, purpose: "decide_action" },
+          callback: () =>
             openai.chat.completions.create({
               model: "gpt-4o-mini",
               messages: this.messages,
@@ -72,8 +70,8 @@ export class Agent {
               tool_choice: "required",
               parallel_tool_calls: false,
               temperature: 0.7,
-            })
-        );
+            }),
+        });
 
         const assistantMsg = response.choices[0].message;
         this.messages.push(assistantMsg);
@@ -98,11 +96,10 @@ export class Agent {
 
         switch (fnName) {
           case "check_market_price": {
-            const result = await logfire.span(
-              `tool_call`,
-              { tool: "check_market_price", role: this.role, round: roundNumber },
-              () => Promise.resolve(checkMarketPrice(this.role, this.marketConfig))
-            );
+            const result = await logfire.span(`tool_call`, {
+              attributes: { tool: "check_market_price", role: this.role, round: roundNumber },
+              callback: () => Promise.resolve(checkMarketPrice(this.role, this.marketConfig)),
+            });
             let toolResponse: string;
 
             if (result.success) {
@@ -120,10 +117,9 @@ export class Agent {
             this.messages.push(toolMsg);
 
             // Agent needs to take an actual negotiation action after checking price
-            const followUp = await logfire.span(
-              `llm_call`,
-              { model: "gpt-4o-mini", round: roundNumber, role: this.role, purpose: "act_after_market_check" },
-              () =>
+            const followUp = await logfire.span(`llm_call`, {
+              attributes: { model: "gpt-4o-mini", round: roundNumber, role: this.role, purpose: "act_after_market_check" },
+              callback: () =>
                 openai.chat.completions.create({
                   model: "gpt-4o-mini",
                   messages: this.messages,
@@ -133,8 +129,8 @@ export class Agent {
                   tool_choice: "required",
                   parallel_tool_calls: false,
                   temperature: 0.7,
-                })
-            );
+                }),
+            });
 
             const followUpMsg = followUp.choices[0].message;
             this.messages.push(followUpMsg);
@@ -172,10 +168,9 @@ export class Agent {
           }
 
           case "review_past_offers": {
-            const historyStr = await logfire.span(
-              `tool_call`,
-              { tool: "review_past_offers", role: this.role, round: roundNumber, offerCount: this.offerHistory.length },
-              () =>
+            const historyStr = await logfire.span(`tool_call`, {
+              attributes: { tool: "review_past_offers", role: this.role, round: roundNumber, offerCount: this.offerHistory.length },
+              callback: () =>
                 Promise.resolve(
                   this.offerHistory.length === 0
                     ? "No offers have been made yet."
@@ -185,8 +180,8 @@ export class Agent {
                             `Round ${o.round}: ${o.agent} offered $${o.price.toFixed(2)}`
                         )
                         .join("\n")
-                )
-            );
+                ),
+            });
 
             this.messages.push({
               role: "tool",
@@ -195,10 +190,9 @@ export class Agent {
             });
 
             // After reviewing, agent needs to act
-            const reviewFollowUp = await logfire.span(
-              `llm_call`,
-              { model: "gpt-4o-mini", round: roundNumber, role: this.role, purpose: "act_after_offer_review" },
-              () =>
+            const reviewFollowUp = await logfire.span(`llm_call`, {
+              attributes: { model: "gpt-4o-mini", round: roundNumber, role: this.role, purpose: "act_after_offer_review" },
+              callback: () =>
                 openai.chat.completions.create({
                   model: "gpt-4o-mini",
                   messages: this.messages,
@@ -210,8 +204,8 @@ export class Agent {
                   tool_choice: "required",
                   parallel_tool_calls: false,
                   temperature: 0.7,
-                })
-            );
+                }),
+            });
 
             const rfMsg = reviewFollowUp.choices[0].message;
             this.messages.push(rfMsg);
@@ -309,8 +303,8 @@ export class Agent {
         }
 
         return this.buildResult(roundNumber, runId, negotiation, agentAction);
-      }
-    );
+      },
+    });
   }
 
   private buildResult(

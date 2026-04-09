@@ -1,0 +1,212 @@
+{
+  "runId": "run_1775755333377_6saew0",
+  "startedAt": "2026-04-09T17:22:13.377Z",
+  "finishedAt": "2026-04-09T17:22:30.299Z",
+  "durationMs": 16922,
+  "config": {
+    "product": "Aluminum Sheets",
+    "marketBasePrice": 75,
+    "agents": [
+      {
+        "role": "supplier",
+        "reservationPrice": 60
+      },
+      {
+        "role": "manufacturer",
+        "reservationPrice": 85
+      },
+      {
+        "role": "retailer",
+        "reservationPrice": 120
+      }
+    ],
+    "maxRoundsPerNegotiation": 10,
+    "marketNoiseRange": 0.2,
+    "toolFailureRate": 0.25
+  },
+  "negotiations": [
+    {
+      "pair": "supplier_manufacturer",
+      "events": [
+        {
+          "timestamp": "2026-04-09T17:22:15.832Z",
+          "runId": "run_1775755333377_6saew0",
+          "negotiation": "supplier_manufacturer",
+          "round": 1,
+          "agent": "supplier",
+          "action": "make_offer",
+          "price": 75,
+          "reservationPrice": 60,
+          "marketPriceActual": 75,
+          "margin": 15,
+          "reasoning": "Given the current demand for aluminum sheets and our quality standards, I believe $75 is a competitive starting point.",
+          "toolSuccess": false,
+          "toolError": "Market data service unavailable. Try again later.",
+          "messageDeliveredRound": 2
+        },
+        {
+          "timestamp": "2026-04-09T17:22:16.981Z",
+          "runId": "run_1775755333377_6saew0",
+          "negotiation": "supplier_manufacturer",
+          "round": 2,
+          "agent": "manufacturer",
+          "action": "reject",
+          "reservationPrice": 85,
+          "reasoning": "Thank you for your offer, but I believe we can negotiate a better price. I would like to propose $70.00 as a more reasonable starting point.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 3
+        },
+        {
+          "timestamp": "2026-04-09T17:22:18.017Z",
+          "runId": "run_1775755333377_6saew0",
+          "negotiation": "supplier_manufacturer",
+          "round": 3,
+          "agent": "supplier",
+          "action": "make_offer",
+          "price": 72,
+          "reservationPrice": 60,
+          "margin": 12,
+          "reasoning": "I appreciate your counteroffer. Considering the quality of our aluminum sheets, I can adjust my offer to $72.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 4
+        },
+        {
+          "timestamp": "2026-04-09T17:22:19.086Z",
+          "runId": "run_1775755333377_6saew0",
+          "negotiation": "supplier_manufacturer",
+          "round": 4,
+          "agent": "manufacturer",
+          "action": "reject",
+          "reservationPrice": 85,
+          "reasoning": "Thank you for the revised offer. However, I would like to propose $70.00 again, as I believe it reflects a fair price considering the market conditions.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 5
+        },
+        {
+          "timestamp": "2026-04-09T17:22:20.229Z",
+          "runId": "run_1775755333377_6saew0",
+          "negotiation": "supplier_manufacturer",
+          "round": 5,
+          "agent": "supplier",
+          "action": "reject",
+          "reservationPrice": 60,
+          "reasoning": "I understand your position, but $70 is below my minimum acceptable price. I must stand firm on my previous offer of $72.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 6
+        },
+        {
+          "timestamp": "2026-04-09T17:22:22.563Z",
+          "runId": "run_1775755333377_6saew0",
+          "negotiation": "supplier_manufacturer",
+          "round": 6,
+          "agent": "manufacturer",
+          "action": "reject_offer",
+          "reservationPrice": 85,
+          "marketPriceSeen": 71.15,
+          "marketPriceActual": 75,
+          "reasoning": "I appreciate your position, but I cannot accept $72, especially when the market price is $71.15. I am willing to offer $71.00 as my final offer.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 7
+        },
+        {
+          "timestamp": "2026-04-09T17:22:23.486Z",
+          "runId": "run_1775755333377_6saew0",
+          "negotiation": "supplier_manufacturer",
+          "round": 7,
+          "agent": "supplier",
+          "action": "reject",
+          "reservationPrice": 60,
+          "reasoning": "Thank you for your final offer. However, I must walk away as $71 is below my minimum acceptable price.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 8
+        },
+        {
+          "timestamp": "2026-04-09T17:22:24.744Z",
+          "runId": "run_1775755333377_6saew0",
+          "negotiation": "supplier_manufacturer",
+          "round": 8,
+          "agent": "manufacturer",
+          "action": "walk_away",
+          "reservationPrice": 85,
+          "reasoning": "I understand your position, but I must prioritize my budget constraints. I appreciate your time, but I cannot proceed with the negotiation at this price.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 9
+        }
+      ],
+      "outcome": "walk_away",
+      "rounds": 8,
+      "agentA": "supplier",
+      "agentB": "manufacturer"
+    },
+    {
+      "pair": "manufacturer_retailer",
+      "events": [
+        {
+          "timestamp": "2026-04-09T17:22:25.706Z",
+          "runId": "run_1775755333377_6saew0",
+          "negotiation": "manufacturer_retailer",
+          "round": 1,
+          "agent": "manufacturer",
+          "action": "make_offer",
+          "price": 110,
+          "reservationPrice": 95,
+          "margin": -15,
+          "reasoning": "Given the quality of our aluminum sheets and the current market conditions, I am offering a price of $110 per unit. This reflects our costs and ensures a fair margin.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 2
+        },
+        {
+          "timestamp": "2026-04-09T17:22:27.047Z",
+          "runId": "run_1775755333377_6saew0",
+          "negotiation": "manufacturer_retailer",
+          "round": 2,
+          "agent": "retailer",
+          "action": "reject",
+          "reservationPrice": 120,
+          "reasoning": "While I appreciate your offer of $110.00, I am looking for a lower price to ensure a better retail margin.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 3
+        },
+        {
+          "timestamp": "2026-04-09T17:22:29.377Z",
+          "runId": "run_1775755333377_6saew0",
+          "negotiation": "manufacturer_retailer",
+          "round": 3,
+          "agent": "manufacturer",
+          "action": "make_offer",
+          "price": 100,
+          "reservationPrice": 95,
+          "marketPriceSeen": 97.91,
+          "marketPriceActual": 112.5,
+          "margin": -5,
+          "reasoning": "Considering the market price of $97.91 and your request for a better retail margin, I am willing to adjust my offer to $100 per unit. This still ensures a reasonable margin for us.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 4
+        },
+        {
+          "timestamp": "2026-04-09T17:22:30.299Z",
+          "runId": "run_1775755333377_6saew0",
+          "negotiation": "manufacturer_retailer",
+          "round": 4,
+          "agent": "retailer",
+          "action": "accept",
+          "reservationPrice": 120,
+          "reasoning": "I appreciate your willingness to adjust the price. I will accept the offer of $100.00.",
+          "toolSuccess": true,
+          "messageDeliveredRound": 5
+        }
+      ],
+      "outcome": "deal",
+      "finalPrice": 100,
+      "rounds": 4,
+      "agentA": "manufacturer",
+      "agentB": "retailer"
+    }
+  ],
+  "overallOutcome": "failure",
+  "failureDiagnosis": {
+    "type": "single_agent_decision",
+    "description": "manufacturer walked away in round 8. A deal was still possible — this may have been premature.",
+    "agent": "manufacturer"
+  }
+}
