@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supply Chain Negotiation — Trace Viewer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0c0c0e;
+    --surface: #16161a;
+    --surface2: #1e1e24;
+    --border: #2a2a32;
+    --text: #e2e2e6;
+    --text-muted: #7a7a86;
+    --accent: #6ee7b7;
+    --accent-dim: #2d6e56;
+    --red: #f87171;
+    --red-dim: #6e2d2d;
+    --yellow: #fbbf24;
+    --yellow-dim: #6e5a1a;
+    --blue: #60a5fa;
+    --blue-dim: #2d466e;
+    --supplier: #f97316;
+    --manufacturer: #6ee7b7;
+    --retailer: #60a5fa;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Header ───────────────────────────────────── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  header h1 {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  header h1 span { color: var(--accent); }
+
+  /* ── Drop Zone ────────────────────────────────── */
+  #drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    padding: 48px;
+    text-align: center;
+    margin: 32px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  #drop-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(110, 231, 183, 0.04);
+  }
+
+  #drop-zone p {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+
+  #drop-zone p strong { color: var(--text); }
+
+  /* ── Layout ───────────────────────────────────── */
+  #app { display: none; }
+
+  .section {
+    margin: 0 32px 24px;
+  }
+
+  .section-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── Cross-Run Summary ────────────────────────── */
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+
+  .summary-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .summary-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .summary-table tr {
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .summary-table tr:hover { background: var(--surface2); }
+  .summary-table tr.active { background: var(--surface2); border-left: 3px solid var(--accent); }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .badge-success { background: var(--accent-dim); color: var(--accent); }
+  .badge-failure { background: var(--red-dim); color: var(--red); }
+  .badge-systemic { background: var(--yellow-dim); color: var(--yellow); }
+
+  /* ── Run Detail ───────────────────────────────── */
+  #run-detail { display: none; }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .detail-grid.full { grid-template-columns: 1fr; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  .card-title {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+
+  /* ── Timeline ─────────────────────────────────── */
+  .timeline-event {
+    display: grid;
+    grid-template-columns: 40px 10px 1fr;
+    gap: 12px;
+    align-items: start;
+    margin-bottom: 4px;
+    padding: 8px 0;
+  }
+
+  .timeline-round {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: right;
+    padding-top: 2px;
+  }
+
+  .timeline-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-top: 6px;
+  }
+
+  .timeline-dot.supplier { background: var(--supplier); }
+  .timeline-dot.manufacturer { background: var(--manufacturer); }
+  .timeline-dot.retailer { background: var(--retailer); }
+
+  .timeline-content {
+    font-size: 13px;
+  }
+
+  .timeline-action {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 12px;
+  }
+
+  .timeline-price {
+    font-family: var(--mono);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .timeline-message {
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-top: 2px;
+    font-style: italic;
+  }
+
+  .timeline-tool-error {
+    color: var(--red);
+    font-family: var(--mono);
+    font-size: 11px;
+    margin-top: 2px;
+  }
+
+  /* ── Diagnosis ────────────────────────────────── */
+  .diagnosis-box {
+    padding: 16px;
+    border-radius: 6px;
+    border-left: 4px solid;
+    margin-bottom: 12px;
+  }
+
+  .diagnosis-box.success { border-color: var(--accent); background: rgba(110, 231, 183, 0.05); }
+  .diagnosis-box.failure { border-color: var(--red); background: rgba(248, 113, 113, 0.05); }
+  .diagnosis-box.systemic { border-color: var(--yellow); background: rgba(251, 191, 36, 0.05); }
+
+  .diagnosis-type {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .diagnosis-desc { font-size: 14px; }
+
+  /* ── Cascade ──────────────────────────────────── */
+  .cascade-flow {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    justify-content: center;
+    padding: 20px 0;
+  }
+
+  .cascade-node {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 140px;
+  }
+
+  .cascade-node-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+
+  .cascade-node-price {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  .cascade-arrow {
+    font-size: 20px;
+    color: var(--text-muted);
+  }
+
+  .cascade-margin {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    text-align: center;
+  }
+
+  .margin-positive { background: var(--accent-dim); color: var(--accent); }
+  .margin-negative { background: var(--red-dim); color: var(--red); }
+  .margin-none { background: var(--surface2); color: var(--text-muted); }
+
+  /* ── Recommendations ──────────────────────────── */
+  .rec-item {
+    padding: 10px 12px;
+    border-left: 3px solid var(--blue);
+    margin-bottom: 8px;
+    background: rgba(96, 165, 250, 0.04);
+    font-size: 13px;
+  }
+
+  /* ── Chart container ──────────────────────────── */
+  .chart-container {
+    position: relative;
+    height: 280px;
+  }
+
+  /* ── Market divergence ────────────────────────── */
+  .divergence-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+
+  .divergence-bar {
+    height: 8px;
+    border-radius: 4px;
+    min-width: 4px;
+  }
+
+  .divergence-label { min-width: 100px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span>▪</span> Supply Chain Trace Viewer</h1>
+  <div style="font-family: var(--mono); font-size: 12px; color: var(--text-muted);">
+    <span id="file-count">0</span> runs loaded
+  </div>
+</header>
+
+<div id="drop-zone">
+  <p><strong>Drop run JSON files here</strong><br>or click to select — supports multiple files for cross-run analysis</p>
+  <input type="file" id="file-input" multiple accept=".json" style="display:none">
+</div>
+
+<div id="app">
+  <div class="section">
+    <div class="section-title">Cross-Run Summary</div>
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Run</th>
+          <th>Product</th>
+          <th>Outcome</th>
+          <th>Deal 1</th>
+          <th>Deal 2</th>
+          <th>Rounds</th>
+          <th>Failure Type</th>
+          <th>Duration</th>
+        </tr>
+      </thead>
+      <tbody id="summary-body"></tbody>
+    </table>
+  </div>
+
+  <div id="run-detail">
+    <div class="section">
+      <div class="section-title">Failure Diagnosis</div>
+      <div id="diagnosis-container"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Supply Chain Cascade</div>
+      <div class="card">
+        <div id="cascade-container"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="detail-grid">
+        <div class="card">
+          <div class="card-title">Price Convergence — Supplier ↔ Manufacturer</div>
+          <div class="chart-container"><canvas id="chart-neg1"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Price Convergence — Manufacturer ↔ Retailer</div>
+          <div class="chart-container"><canvas id="chart-neg2"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="detail-grid">
+        <div class="card">
+          <div class="card-title">Market Price Divergence</div>
+          <div id="divergence-container"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">What Should Change</div>
+          <div id="recommendations-container"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="detail-grid">
+        <div class="card">
+          <div class="card-title">Timeline — Supplier ↔ Manufacturer</div>
+          <div id="timeline-neg1"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Timeline — Manufacturer ↔ Retailer</div>
+          <div id="timeline-neg2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const runs = [];
+let charts = [];
+
+// ── File Handling ───────────────────────────────
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+function handleFiles(files) {
+  const promises = Array.from(files).map(f => f.text().then(JSON.parse));
+  Promise.all(promises).then(data => {
+    data.forEach(d => {
+      if (!runs.find(r => r.runId === d.runId)) runs.push(d);
+    });
+    document.getElementById('file-count').textContent = runs.length;
+    document.getElementById('app').style.display = 'block';
+    dropZone.style.display = 'none';
+    renderSummary();
+    if (runs.length === 1) selectRun(0);
+  });
+}
+
+// ── Summary Table ───────────────────────────────
+function renderSummary() {
+  const body = document.getElementById('summary-body');
+  body.innerHTML = '';
+
+  runs.forEach((run, idx) => {
+    const tr = document.createElement('tr');
+    const neg1 = run.negotiations[0];
+    const neg2 = run.negotiations[1];
+    const totalRounds = (neg1?.rounds || 0) + (neg2?.rounds || 0);
+
+    tr.innerHTML = `
+      <td style="font-family:var(--mono);font-size:12px;color:var(--text-muted)">${run.runId.slice(4, 20)}</td>
+      <td>${run.config.product}</td>
+      <td><span class="badge ${run.overallOutcome === 'success' ? 'badge-success' : 'badge-failure'}">${run.overallOutcome}</span></td>
+      <td>${neg1 ? formatOutcome(neg1) : '—'}</td>
+      <td>${neg2 ? formatOutcome(neg2) : '—'}</td>
+      <td style="font-family:var(--mono)">${totalRounds}</td>
+      <td style="font-size:12px;color:var(--text-muted)">${run.failureDiagnosis?.type || '—'}</td>
+      <td style="font-family:var(--mono);font-size:12px">${(run.durationMs / 1000).toFixed(1)}s</td>
+    `;
+    tr.addEventListener('click', () => selectRun(idx));
+    body.appendChild(tr);
+  });
+}
+
+function formatOutcome(neg) {
+  if (neg.outcome === 'deal') return `<span style="color:var(--accent);font-family:var(--mono)">$${neg.finalPrice?.toFixed(2)}</span>`;
+  return `<span class="badge badge-failure">${neg.outcome}</span>`;
+}
+
+// ── Select & Render Run ─────────────────────────
+function selectRun(idx) {
+  document.querySelectorAll('.summary-table tr').forEach((tr, i) => {
+    tr.classList.toggle('active', i === idx);
+  });
+
+  const run = runs[idx];
+  document.getElementById('run-detail').style.display = 'block';
+
+  renderDiagnosis(run);
+  renderCascade(run);
+  renderTimeline('timeline-neg1', run.negotiations[0]);
+  renderTimeline('timeline-neg2', run.negotiations[1]);
+  renderCharts(run);
+  renderDivergence(run);
+  renderRecommendations(run);
+}
+
+// ── Diagnosis ───────────────────────────────────
+function renderDiagnosis(run) {
+  const container = document.getElementById('diagnosis-container');
+  const d = run.failureDiagnosis;
+  const cls = d.type === null ? 'success' : d.type === 'systemic' ? 'systemic' : 'failure';
+
+  container.innerHTML = `
+    <div class="diagnosis-box ${cls}">
+      <div class="diagnosis-type" style="color:var(--${cls === 'success' ? 'accent' : cls === 'systemic' ? 'yellow' : 'red'})">${d.type || 'success'}</div>
+      <div class="diagnosis-desc">${d.description}</div>
+      ${d.priceGap != null ? `<div style="margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--text-muted)">Price gap: $${d.priceGap.toFixed(2)}</div>` : ''}
+      ${d.marketDivergence != null ? `<div style="margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--text-muted)">Market divergence: ${d.marketDivergence.toFixed(1)}%</div>` : ''}
+    </div>
+  `;
+}
+
+// ── Cascade Visualization ───────────────────────
+function renderCascade(run) {
+  const container = document.getElementById('cascade-container');
+  const neg1 = run.negotiations[0];
+  const neg2 = run.negotiations[1];
+  const deal1Price = neg1?.finalPrice;
+  const deal2Price = neg2?.finalPrice;
+
+  const mfgMargin = deal1Price != null && deal2Price != null ? deal2Price - deal1Price : null;
+  const supplierMargin = deal1Price != null ? deal1Price - run.config.agents[0].reservationPrice : null;
+  const retailerCeiling = run.config.agents[2].reservationPrice;
+
+  container.innerHTML = `
+    <div class="cascade-flow">
+      <div class="cascade-node">
+        <div class="cascade-node-label" style="color:var(--supplier)">Supplier</div>
+        <div class="cascade-node-price">${deal1Price != null ? '$' + deal1Price.toFixed(2) : '—'}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">floor: $${run.config.agents[0].reservationPrice}</div>
+        ${supplierMargin != null ? `<div class="cascade-margin ${supplierMargin >= 0 ? 'margin-positive' : 'margin-negative'}">margin: $${supplierMargin.toFixed(2)}</div>` : ''}
+      </div>
+      <div class="cascade-arrow">→</div>
+      <div class="cascade-node">
+        <div class="cascade-node-label" style="color:var(--manufacturer)">Manufacturer</div>
+        <div class="cascade-node-price">${deal2Price != null ? '$' + deal2Price.toFixed(2) : '—'}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">bought: ${deal1Price != null ? '$' + deal1Price.toFixed(2) : 'n/a'}</div>
+        ${mfgMargin != null ? `<div class="cascade-margin ${mfgMargin >= 0 ? 'margin-positive' : 'margin-negative'}">margin: $${mfgMargin.toFixed(2)}</div>` : `<div class="cascade-margin margin-none">no deal</div>`}
+      </div>
+      <div class="cascade-arrow">→</div>
+      <div class="cascade-node">
+        <div class="cascade-node-label" style="color:var(--retailer)">Retailer</div>
+        <div class="cascade-node-price">${deal2Price != null ? '$' + deal2Price.toFixed(2) : '—'}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">ceiling: $${retailerCeiling}</div>
+        ${deal2Price != null ? `<div class="cascade-margin ${retailerCeiling - deal2Price >= 0 ? 'margin-positive' : 'margin-negative'}">headroom: $${(retailerCeiling - deal2Price).toFixed(2)}</div>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+// ── Timeline ────────────────────────────────────
+function renderTimeline(containerId, neg) {
+  const container = document.getElementById(containerId);
+  if (!neg || !neg.events.length) {
+    container.innerHTML = '<div style="color:var(--text-muted);font-size:13px">No events</div>';
+    return;
+  }
+
+  const actionColors = {
+    make_offer: 'var(--accent)',
+    accept: 'var(--accent)',
+    reject: 'var(--red)',
+    walk_away: 'var(--red)',
+    check_market_price: 'var(--blue)',
+  };
+
+  container.innerHTML = neg.events
+    .filter(e => e.action !== 'check_market_price') // skip pure info-gathering
+    .map(e => `
+      <div class="timeline-event">
+        <div class="timeline-round">R${e.round}</div>
+        <div class="timeline-dot ${e.agent}"></div>
+        <div class="timeline-content">
+          <span class="timeline-action" style="color:${actionColors[e.action] || 'var(--text)'}">${e.action}</span>
+          ${e.price != null ? `<span class="timeline-price"> $${e.price.toFixed(2)}</span>` : ''}
+          ${e.margin != null ? `<span style="font-family:var(--mono);font-size:11px;color:${e.margin >= 0 ? 'var(--accent)' : 'var(--red)'};margin-left:8px">(margin: $${e.margin.toFixed(2)})</span>` : ''}
+          <div class="timeline-message">${e.reasoning || ''}</div>
+          ${!e.toolSuccess ? `<div class="timeline-tool-error">⚠ Tool error: ${e.toolError}</div>` : ''}
+        </div>
+      </div>
+    `).join('');
+}
+
+// ── Price Charts ────────────────────────────────
+function renderCharts(run) {
+  charts.forEach(c => c.destroy());
+  charts = [];
+
+  if (run.negotiations[0]) charts.push(renderPriceChart('chart-neg1', run.negotiations[0], run));
+  if (run.negotiations[1]) charts.push(renderPriceChart('chart-neg2', run.negotiations[1], run));
+}
+
+function renderPriceChart(canvasId, neg, run) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+
+  const offers = neg.events.filter(e => e.action === 'make_offer' && e.price != null);
+  const agentAOffers = offers.filter(e => e.agent === neg.agentA);
+  const agentBOffers = offers.filter(e => e.agent === neg.agentB);
+
+  // Reservation prices for reference lines
+  const agentAConfig = run.config.agents.find(a => a.role === neg.agentA);
+  const agentBConfig = run.config.agents.find(a => a.role === neg.agentB);
+
+  const maxRound = Math.max(...offers.map(o => o.round), 1);
+  const labels = Array.from({ length: maxRound }, (_, i) => `R${i + 1}`);
+
+  const colorA = neg.agentA === 'supplier' ? '#f97316' : '#6ee7b7';
+  const colorB = neg.agentB === 'manufacturer' ? '#6ee7b7' : '#60a5fa';
+
+  const datasets = [
+    {
+      label: neg.agentA,
+      data: labels.map((_, i) => {
+        const o = agentAOffers.find(e => e.round === i + 1);
+        return o ? o.price : null;
+      }),
+      borderColor: colorA,
+      backgroundColor: colorA + '33',
+      tension: 0.3,
+      spanGaps: true,
+      pointRadius: 5,
+    },
+    {
+      label: neg.agentB,
+      data: labels.map((_, i) => {
+        const o = agentBOffers.find(e => e.round === i + 1);
+        return o ? o.price : null;
+      }),
+      borderColor: colorB,
+      backgroundColor: colorB + '33',
+      tension: 0.3,
+      spanGaps: true,
+      pointRadius: 5,
+    },
+  ];
+
+  // Add reservation price lines
+  if (agentAConfig) {
+    datasets.push({
+      label: `${neg.agentA} floor`,
+      data: labels.map(() => agentAConfig.reservationPrice),
+      borderColor: colorA + '55',
+      borderDash: [6, 4],
+      pointRadius: 0,
+      borderWidth: 1,
+    });
+  }
+  if (agentBConfig) {
+    datasets.push({
+      label: `${neg.agentB} ceiling`,
+      data: labels.map(() => agentBConfig.reservationPrice),
+      borderColor: colorB + '55',
+      borderDash: [6, 4],
+      pointRadius: 0,
+      borderWidth: 1,
+    });
+  }
+
+  // Deal price line
+  if (neg.finalPrice != null) {
+    datasets.push({
+      label: 'Deal price',
+      data: labels.map(() => neg.finalPrice),
+      borderColor: '#fbbf24',
+      borderDash: [3, 3],
+      pointRadius: 0,
+      borderWidth: 2,
+    });
+  }
+
+  return new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: { color: '#7a7a86', font: { family: "'JetBrains Mono'", size: 11 } }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#7a7a86', font: { family: "'JetBrains Mono'", size: 11 } }, grid: { color: '#2a2a32' } },
+        y: {
+          ticks: {
+            color: '#7a7a86',
+            font: { family: "'JetBrains Mono'", size: 11 },
+            callback: v => '$' + v
+          },
+          grid: { color: '#2a2a32' }
+        }
+      }
+    }
+  });
+}
+
+// ── Market Price Divergence ─────────────────────
+function renderDivergence(run) {
+  const container = document.getElementById('divergence-container');
+  const allEvents = run.negotiations.flatMap(n => n.events);
+  const priceChecks = allEvents.filter(e => e.marketPriceSeen != null && e.marketPriceActual != null);
+
+  if (priceChecks.length === 0) {
+    container.innerHTML = '<div style="color:var(--text-muted);font-size:13px">No market price checks recorded</div>';
+    return;
+  }
+
+  const byAgent = {};
+  priceChecks.forEach(e => {
+    if (!byAgent[e.agent]) byAgent[e.agent] = [];
+    byAgent[e.agent].push(e);
+  });
+
+  const agentColors = { supplier: 'var(--supplier)', manufacturer: 'var(--manufacturer)', retailer: 'var(--retailer)' };
+
+  container.innerHTML = Object.entries(byAgent).map(([agent, checks]) => {
+    const avgSeen = checks.reduce((s, c) => s + c.marketPriceSeen, 0) / checks.length;
+    const actual = checks[0].marketPriceActual;
+    const pctOff = ((avgSeen - actual) / actual * 100);
+    const barWidth = Math.min(Math.abs(pctOff) * 5, 200);
+
+    return `
+      <div class="divergence-row">
+        <div class="divergence-label" style="color:${agentColors[agent]}">${agent}</div>
+        <div style="font-family:var(--mono);min-width:70px">$${avgSeen.toFixed(2)}</div>
+        <div class="divergence-bar" style="width:${barWidth}px;background:${pctOff > 0 ? 'var(--red)' : 'var(--blue)'}"></div>
+        <div style="font-family:var(--mono);font-size:11px;color:${pctOff > 0 ? 'var(--red)' : 'var(--blue)'}">${pctOff > 0 ? '+' : ''}${pctOff.toFixed(1)}%</div>
+      </div>
+    `;
+  }).join('') + `
+    <div style="margin-top:12px;font-size:12px;color:var(--text-muted);font-family:var(--mono)">
+      Actual base: $${priceChecks[0].marketPriceActual.toFixed(2)}
+    </div>
+  `;
+}
+
+// ── Recommendations ─────────────────────────────
+function renderRecommendations(run) {
+  const container = document.getElementById('recommendations-container');
+  const recs = [];
+
+  const neg1 = run.negotiations[0];
+  const neg2 = run.negotiations[1];
+  const d = run.failureDiagnosis;
+
+  // Systemic: price ranges need adjustment
+  if (d.type === 'systemic') {
+    recs.push('The reservation prices have no overlap — no deal is mathematically possible. Widen the acceptable price range for at least one agent.');
+  }
+
+  // Tool failures
+  const allEvents = run.negotiations.flatMap(n => n.events);
+  const toolFails = allEvents.filter(e => !e.toolSuccess);
+  if (toolFails.length > 0) {
+    recs.push(`${toolFails.length} tool failure(s) occurred. Consider adding retry logic or fallback pricing when market data is unavailable.`);
+  }
+
+  // Cascade squeeze
+  if (neg1?.outcome === 'deal' && neg2?.outcome !== 'deal' && neg1.finalPrice != null) {
+    const mfgBoughtAt = neg1.finalPrice;
+    const retailerMax = run.config.agents.find(a => a.role === 'retailer')?.reservationPrice || 0;
+    if (mfgBoughtAt > retailerMax * 0.85) {
+      recs.push(`The supplier deal ($${mfgBoughtAt.toFixed(2)}) consumed most of the available margin, making the retailer deal nearly impossible. The manufacturer should negotiate harder with the supplier.`);
+    }
+  }
+
+  // Market divergence
+  const priceChecks = allEvents.filter(e => e.marketPriceSeen != null && e.marketPriceActual != null);
+  if (priceChecks.length >= 2) {
+    const prices = priceChecks.map(e => e.marketPriceSeen);
+    const spread = Math.max(...prices) - Math.min(...prices);
+    const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
+    if (spread / avg > 0.15) {
+      recs.push(`Market price signals diverged by ${(spread / avg * 100).toFixed(0)}%. Consider reducing noise or giving agents access to a shared reference price.`);
+    }
+  }
+
+  // Timeout
+  run.negotiations.forEach(neg => {
+    if (neg.outcome === 'timeout') {
+      const offers = neg.events.filter(e => e.action === 'make_offer');
+      if (offers.length < 3) {
+        recs.push(`${neg.pair} timed out with only ${offers.length} actual offers. Agents may be spending too many turns checking prices instead of negotiating.`);
+      } else {
+        recs.push(`${neg.pair} timed out after ${neg.rounds} rounds. Consider increasing the round limit or prompting agents to concede faster.`);
+      }
+    }
+  });
+
+  // Success feedback
+  if (run.overallOutcome === 'success') {
+    recs.push('Both deals closed successfully. To stress-test, try tightening margins or increasing market noise.');
+  }
+
+  if (recs.length === 0) {
+    recs.push('No specific recommendations — review the timeline for qualitative insights.');
+  }
+
+  container.innerHTML = recs.map(r => `<div class="rec-item">${r}</div>`).join('');
+}
+</script>
+</body>
+</html>

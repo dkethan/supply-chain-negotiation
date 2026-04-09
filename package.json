@@ -1,0 +1,21 @@
+{
+  "name": "supply-chain-negotiation",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node --import ./dist/instrumentation.js dist/run.js",
+    "dev": "tsx src/run.ts",
+    "multi": "tsx src/multi-run.ts"
+  },
+  "dependencies": {
+    "openai": "^4.78.0",
+    "@pydantic/logfire-node": "^0.13.1",
+    "dotenv": "^16.4.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "tsx": "^4.19.0",
+    "@types/node": "^22.0.0"
+  }
+}
