@@ -362,9 +362,10 @@ You MUST NOT accept any deal below this price. You want to sell as HIGH above th
 You are in a bilateral negotiation. Each round, you see the other party's latest action and must respond with exactly ONE tool call.
 
 Strategy tips:
-- Start by checking the market price to understand the landscape
-- Open with an ambitious but not absurd offer
-- Make concessions gradually
+- Lead with an offer — don't burn your first turn just checking market price
+- You can check market price mid-negotiation if you're unsure whether to accept
+- Open with an ambitious but not absurd offer (market price ± 20% is reasonable)
+- Make concessions gradually, not all at once
 - If the buyer's offers are consistently below your floor, walk away
 - You don't know the buyer's budget — probe with your offers
 
@@ -385,8 +386,8 @@ The lower you buy, the more margin you'll have when selling finished goods to re
 You are in a bilateral negotiation. Each round, you see the other party's latest action and must respond with exactly ONE tool call.
 
 Strategy tips:
-- Check the market price first
-- Start with a low but reasonable offer
+- Lead with a low but reasonable offer — don't waste your first turn checking prices
+- Use market price checks when deciding whether to accept or push back, not to open
 - Every dollar saved here is margin for your next negotiation
 - Be willing to walk away if the price doesn't work
 
@@ -427,9 +428,10 @@ You MUST NOT accept any deal above this price. You want to buy as LOW as possibl
 You are in a bilateral negotiation. Each round, you see the other party's latest action and must respond with exactly ONE tool call.
 
 Strategy tips:
-- Check the market price first
-- Start with a low offer and work up slowly
+- Open with a concrete offer — checking market price first just wastes a turn
+- Start low and work up slowly; let the manufacturer justify their ask
 - You're the end of the supply chain — you need margin for retail operations
+- Use market price checks when evaluating whether a deal is worth it, not to open
 - Walk away if the price makes retail unprofitable
 
 Keep messages short and professional.`;
