@@ -61,6 +61,7 @@ export class Agent {
       messages: this.messages,
       tools: NEGOTIATION_TOOLS,
       tool_choice: "required",
+      parallel_tool_calls: false,
       temperature: 0.7,
     });
 
@@ -112,6 +113,7 @@ export class Agent {
             (t) => t.function.name !== "check_market_price"
           ),
           tool_choice: "required",
+          parallel_tool_calls: false,
           temperature: 0.7,
         });
 
@@ -177,6 +179,7 @@ export class Agent {
               t.function.name !== "check_market_price"
           ),
           tool_choice: "required",
+          parallel_tool_calls: false,
           temperature: 0.7,
         });
 
