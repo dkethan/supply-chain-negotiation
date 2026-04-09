@@ -6,6 +6,7 @@ import {
   buildRetailerPrompt,
 } from "./agent.js";
 import { initMarket } from "./market.js";
+import { logfire } from "./instrumentation.js";
 import type {
   AgentRole,
   MarketConfig,
@@ -32,6 +33,10 @@ async function runNegotiation(
   runId: string,
   maxRounds: number
 ): Promise<NegotiationResult> {
+  return logfire.span(
+    `negotiation`,
+    { pair: setup.pair, agentA: setup.roleA, agentB: setup.roleB, maxRounds },
+    async () => {
   const { pair, agentA, agentB, roleA, roleB } = setup;
   const events: NegotiationEvent[] = [];
 
@@ -68,11 +73,10 @@ async function runNegotiation(
 
     console.log(`  [Round ${round}] ${agentRole}'s turn...`);
 
-    const { action, event } = await agent.takeTurn(
-      round,
-      situation,
-      runId,
-      pair
+    const { action, event } = await logfire.span(
+      `turn`,
+      { round, agent: agentRole, pair, negotiation: pair },
+      () => agent.takeTurn(round, situation, runId, pair)
     );
 
     events.push(event);
@@ -145,6 +149,7 @@ async function runNegotiation(
     agentA: roleA,
     agentB: roleB,
   };
+  }); // end logfire.span('negotiation')
 }
 
 function buildMessageForOther(

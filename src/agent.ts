@@ -5,6 +5,7 @@ import type {
 } from "openai/resources/chat/completions";
 import { NEGOTIATION_TOOLS } from "./tools.js";
 import { checkMarketPrice } from "./market.js";
+import { logfire } from "./instrumentation.js";
 import type {
   AgentRole,
   AgentConfig,
@@ -52,233 +53,264 @@ export class Agent {
     runId: string,
     negotiation: NegotiationPair
   ): Promise<{ action: AgentAction; event: NegotiationEvent }> {
-    // Add the situation update as a user message
-    this.messages.push({ role: "user", content: situationUpdate });
+    return logfire.span(
+      `agent.turn`,
+      { role: this.role, round: roundNumber, negotiation },
+      async () => {
+        // Add the situation update as a user message
+        this.messages.push({ role: "user", content: situationUpdate });
 
-    // Call OpenAI with tools
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: this.messages,
-      tools: NEGOTIATION_TOOLS,
-      tool_choice: "required",
-      parallel_tool_calls: false,
-      temperature: 0.7,
-    });
+        // Call OpenAI with tools
+        const response = await logfire.span(
+          `llm_call`,
+          { model: "gpt-4o-mini", round: roundNumber, role: this.role, purpose: "decide_action" },
+          () =>
+            openai.chat.completions.create({
+              model: "gpt-4o-mini",
+              messages: this.messages,
+              tools: NEGOTIATION_TOOLS,
+              tool_choice: "required",
+              parallel_tool_calls: false,
+              temperature: 0.7,
+            })
+        );
 
-    const assistantMsg = response.choices[0].message;
-    this.messages.push(assistantMsg);
+        const assistantMsg = response.choices[0].message;
+        this.messages.push(assistantMsg);
 
-    const reasoning = assistantMsg.content || "";
+        const reasoning = assistantMsg.content || "";
 
-    // If no tool call (shouldn't happen with tool_choice: required)
-    if (!assistantMsg.tool_calls || assistantMsg.tool_calls.length === 0) {
-      return this.buildResult(roundNumber, runId, negotiation, {
-        action: "reject",
-        message: reasoning || "No action taken",
-        toolSuccess: true,
-      });
-    }
-
-    // Process the first tool call
-    const toolCall = assistantMsg.tool_calls[0];
-    const fnName = toolCall.function.name;
-    const args = JSON.parse(toolCall.function.arguments);
-
-    let agentAction: AgentAction;
-
-    switch (fnName) {
-      case "check_market_price": {
-        const result = checkMarketPrice(this.role, this.marketConfig);
-        let toolResponse: string;
-
-        if (result.success) {
-          toolResponse = `Market reference price for ${args.product}: $${result.price!.toFixed(2)}${result.isStale ? " (note: data may be slightly delayed)" : ""}`;
-        } else {
-          toolResponse = `Error: ${result.error}`;
-        }
-
-        // Send tool result back and get the agent's actual action
-        const toolMsg: ChatCompletionToolMessageParam = {
-          role: "tool",
-          tool_call_id: toolCall.id,
-          content: toolResponse,
-        };
-        this.messages.push(toolMsg);
-
-        // Agent needs to take an actual negotiation action after checking price
-        const followUp = await openai.chat.completions.create({
-          model: "gpt-4o-mini",
-          messages: this.messages,
-          tools: NEGOTIATION_TOOLS.filter(
-            (t) => t.function.name !== "check_market_price"
-          ),
-          tool_choice: "required",
-          parallel_tool_calls: false,
-          temperature: 0.7,
-        });
-
-        const followUpMsg = followUp.choices[0].message;
-        this.messages.push(followUpMsg);
-
-        if (followUpMsg.tool_calls && followUpMsg.tool_calls.length > 0) {
-          const followUpCall = followUpMsg.tool_calls[0];
-          const followUpArgs = JSON.parse(followUpCall.function.arguments);
-          agentAction = {
-            action: followUpCall.function.name as ActionType,
-            price: followUpArgs.price,
-            message: followUpArgs.message || followUpMsg.content || "",
-            marketPriceSeen: result.price,
-            marketPriceActual: result.actualBasePrice,
-            toolSuccess: result.success,
-            toolError: result.error,
-          };
-
-          // Add tool result for the follow-up tool call
-          this.messages.push({
-            role: "tool",
-            tool_call_id: followUpCall.id,
-            content: `Action ${followUpCall.function.name} acknowledged.`,
-          });
-        } else {
-          agentAction = {
+        // If no tool call (shouldn't happen with tool_choice: required)
+        if (!assistantMsg.tool_calls || assistantMsg.tool_calls.length === 0) {
+          return this.buildResult(roundNumber, runId, negotiation, {
             action: "reject",
-            message: followUpMsg.content || "Checked price, no action",
-            marketPriceSeen: result.price,
-            marketPriceActual: result.actualBasePrice,
-            toolSuccess: result.success,
-            toolError: result.error,
-          };
+            message: reasoning || "No action taken",
+            toolSuccess: true,
+          });
         }
-        break;
-      }
 
-      case "review_past_offers": {
-        const historyStr =
-          this.offerHistory.length === 0
-            ? "No offers have been made yet."
-            : this.offerHistory
-                .map(
-                  (o) =>
-                    `Round ${o.round}: ${o.agent} offered $${o.price.toFixed(2)}`
+        // Process the first tool call
+        const toolCall = assistantMsg.tool_calls[0];
+        const fnName = toolCall.function.name;
+        const args = JSON.parse(toolCall.function.arguments);
+
+        let agentAction: AgentAction;
+
+        switch (fnName) {
+          case "check_market_price": {
+            const result = await logfire.span(
+              `tool_call`,
+              { tool: "check_market_price", role: this.role, round: roundNumber },
+              () => Promise.resolve(checkMarketPrice(this.role, this.marketConfig))
+            );
+            let toolResponse: string;
+
+            if (result.success) {
+              toolResponse = `Market reference price for ${args.product}: $${result.price!.toFixed(2)}${result.isStale ? " (note: data may be slightly delayed)" : ""}`;
+            } else {
+              toolResponse = `Error: ${result.error}`;
+            }
+
+            // Send tool result back and get the agent's actual action
+            const toolMsg: ChatCompletionToolMessageParam = {
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: toolResponse,
+            };
+            this.messages.push(toolMsg);
+
+            // Agent needs to take an actual negotiation action after checking price
+            const followUp = await logfire.span(
+              `llm_call`,
+              { model: "gpt-4o-mini", round: roundNumber, role: this.role, purpose: "act_after_market_check" },
+              () =>
+                openai.chat.completions.create({
+                  model: "gpt-4o-mini",
+                  messages: this.messages,
+                  tools: NEGOTIATION_TOOLS.filter(
+                    (t) => t.function.name !== "check_market_price"
+                  ),
+                  tool_choice: "required",
+                  parallel_tool_calls: false,
+                  temperature: 0.7,
+                })
+            );
+
+            const followUpMsg = followUp.choices[0].message;
+            this.messages.push(followUpMsg);
+
+            if (followUpMsg.tool_calls && followUpMsg.tool_calls.length > 0) {
+              const followUpCall = followUpMsg.tool_calls[0];
+              const followUpArgs = JSON.parse(followUpCall.function.arguments);
+              agentAction = {
+                action: followUpCall.function.name as ActionType,
+                price: followUpArgs.price,
+                message: followUpArgs.message || followUpMsg.content || "",
+                marketPriceSeen: result.price,
+                marketPriceActual: result.actualBasePrice,
+                toolSuccess: result.success,
+                toolError: result.error,
+              };
+
+              // Add tool result for the follow-up tool call
+              this.messages.push({
+                role: "tool",
+                tool_call_id: followUpCall.id,
+                content: `Action ${followUpCall.function.name} acknowledged.`,
+              });
+            } else {
+              agentAction = {
+                action: "reject",
+                message: followUpMsg.content || "Checked price, no action",
+                marketPriceSeen: result.price,
+                marketPriceActual: result.actualBasePrice,
+                toolSuccess: result.success,
+                toolError: result.error,
+              };
+            }
+            break;
+          }
+
+          case "review_past_offers": {
+            const historyStr = await logfire.span(
+              `tool_call`,
+              { tool: "review_past_offers", role: this.role, round: roundNumber, offerCount: this.offerHistory.length },
+              () =>
+                Promise.resolve(
+                  this.offerHistory.length === 0
+                    ? "No offers have been made yet."
+                    : this.offerHistory
+                        .map(
+                          (o) =>
+                            `Round ${o.round}: ${o.agent} offered $${o.price.toFixed(2)}`
+                        )
+                        .join("\n")
                 )
-                .join("\n");
+            );
 
-        this.messages.push({
-          role: "tool",
-          tool_call_id: toolCall.id,
-          content: historyStr,
-        });
+            this.messages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: historyStr,
+            });
 
-        // After reviewing, agent needs to act
-        const reviewFollowUp = await openai.chat.completions.create({
-          model: "gpt-4o-mini",
-          messages: this.messages,
-          tools: NEGOTIATION_TOOLS.filter(
-            (t) =>
-              t.function.name !== "review_past_offers" &&
-              t.function.name !== "check_market_price"
-          ),
-          tool_choice: "required",
-          parallel_tool_calls: false,
-          temperature: 0.7,
-        });
+            // After reviewing, agent needs to act
+            const reviewFollowUp = await logfire.span(
+              `llm_call`,
+              { model: "gpt-4o-mini", round: roundNumber, role: this.role, purpose: "act_after_offer_review" },
+              () =>
+                openai.chat.completions.create({
+                  model: "gpt-4o-mini",
+                  messages: this.messages,
+                  tools: NEGOTIATION_TOOLS.filter(
+                    (t) =>
+                      t.function.name !== "review_past_offers" &&
+                      t.function.name !== "check_market_price"
+                  ),
+                  tool_choice: "required",
+                  parallel_tool_calls: false,
+                  temperature: 0.7,
+                })
+            );
 
-        const rfMsg = reviewFollowUp.choices[0].message;
-        this.messages.push(rfMsg);
+            const rfMsg = reviewFollowUp.choices[0].message;
+            this.messages.push(rfMsg);
 
-        if (rfMsg.tool_calls && rfMsg.tool_calls.length > 0) {
-          const rfCall = rfMsg.tool_calls[0];
-          const rfArgs = JSON.parse(rfCall.function.arguments);
-          agentAction = {
-            action: rfCall.function.name as ActionType,
-            price: rfArgs.price,
-            message: rfArgs.message || rfMsg.content || "",
-            toolSuccess: true,
-          };
-          this.messages.push({
-            role: "tool",
-            tool_call_id: rfCall.id,
-            content: `Action ${rfCall.function.name} acknowledged.`,
-          });
-        } else {
-          agentAction = {
-            action: "reject",
-            message: rfMsg.content || "Reviewed offers, no action",
-            toolSuccess: true,
-          };
+            if (rfMsg.tool_calls && rfMsg.tool_calls.length > 0) {
+              const rfCall = rfMsg.tool_calls[0];
+              const rfArgs = JSON.parse(rfCall.function.arguments);
+              agentAction = {
+                action: rfCall.function.name as ActionType,
+                price: rfArgs.price,
+                message: rfArgs.message || rfMsg.content || "",
+                toolSuccess: true,
+              };
+              this.messages.push({
+                role: "tool",
+                tool_call_id: rfCall.id,
+                content: `Action ${rfCall.function.name} acknowledged.`,
+              });
+            } else {
+              agentAction = {
+                action: "reject",
+                message: rfMsg.content || "Reviewed offers, no action",
+                toolSuccess: true,
+              };
+            }
+            break;
+          }
+
+          case "make_offer":
+          case "counter_offer": {
+            agentAction = {
+              action: "make_offer",
+              price: args.price,
+              message: args.message || "",
+              toolSuccess: true,
+            };
+            this.messages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: `Offer of $${args.price.toFixed(2)} sent.`,
+            });
+            break;
+          }
+
+          case "accept_offer": {
+            agentAction = {
+              action: "accept",
+              message: args.message || "",
+              toolSuccess: true,
+            };
+            this.messages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: "Offer accepted. Deal closed.",
+            });
+            break;
+          }
+
+          case "reject_offer": {
+            agentAction = {
+              action: "reject",
+              message: args.message || "",
+              toolSuccess: true,
+            };
+            this.messages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: "Offer rejected.",
+            });
+            break;
+          }
+
+          case "walk_away": {
+            agentAction = {
+              action: "walk_away",
+              message: args.message || "",
+              toolSuccess: true,
+            };
+            this.messages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: "You have walked away. Negotiation over.",
+            });
+            break;
+          }
+
+          default: {
+            agentAction = {
+              action: "reject",
+              message: `Unknown action: ${fnName}`,
+              toolSuccess: false,
+              toolError: `Unknown tool: ${fnName}`,
+            };
+          }
         }
-        break;
-      }
 
-      case "make_offer":
-      case "counter_offer": {
-        agentAction = {
-          action: "make_offer",
-          price: args.price,
-          message: args.message || "",
-          toolSuccess: true,
-        };
-        this.messages.push({
-          role: "tool",
-          tool_call_id: toolCall.id,
-          content: `Offer of $${args.price.toFixed(2)} sent.`,
-        });
-        break;
+        return this.buildResult(roundNumber, runId, negotiation, agentAction);
       }
-
-      case "accept_offer": {
-        agentAction = {
-          action: "accept",
-          message: args.message || "",
-          toolSuccess: true,
-        };
-        this.messages.push({
-          role: "tool",
-          tool_call_id: toolCall.id,
-          content: "Offer accepted. Deal closed.",
-        });
-        break;
-      }
-
-      case "reject_offer": {
-        agentAction = {
-          action: "reject",
-          message: args.message || "",
-          toolSuccess: true,
-        };
-        this.messages.push({
-          role: "tool",
-          tool_call_id: toolCall.id,
-          content: "Offer rejected.",
-        });
-        break;
-      }
-
-      case "walk_away": {
-        agentAction = {
-          action: "walk_away",
-          message: args.message || "",
-          toolSuccess: true,
-        };
-        this.messages.push({
-          role: "tool",
-          tool_call_id: toolCall.id,
-          content: "You have walked away. Negotiation over.",
-        });
-        break;
-      }
-
-      default: {
-        agentAction = {
-          action: "reject",
-          message: `Unknown action: ${fnName}`,
-          toolSuccess: false,
-          toolError: `Unknown tool: ${fnName}`,
-        };
-      }
-    }
-
-    return this.buildResult(roundNumber, runId, negotiation, agentAction);
+    );
   }
 
   private buildResult(
