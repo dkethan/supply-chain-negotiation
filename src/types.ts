@@ -28,10 +28,31 @@ export interface MarketConfig {
   staleDataRate: number;    // probability of returning outdated price
 }
 
+// ── LLM call capture ────────────────────────────────────────
+export interface LlmCall {
+  input: string;        // situation/prompt sent to the LLM this turn
+  output: string;       // LLM response (content + tool call description)
+  tokens?: number;      // total tokens used (all LLM calls this turn)
+  latencyMs: number;    // total LLM time this turn (all calls combined)
+}
+
+// ── Tool call capture ────────────────────────────────────────
+export interface ToolCallDetail {
+  name: string;
+  input: Record<string, unknown>;
+  output: unknown;
+  latencyMs: number;
+  success: boolean;
+  isStale?: boolean;
+  error?: string;
+}
+
 // ── Negotiation Event (the core trace unit) ─────────────────
 export interface NegotiationEvent {
   timestamp: string;
   runId: string;
+  traceId: string;    // identifies the negotiation trace (runId + pair)
+  spanId: string;     // identifies this specific turn (traceId + round + agent)
   negotiation: NegotiationPair;
   round: number;
   agent: AgentRole;
@@ -40,8 +61,10 @@ export interface NegotiationEvent {
   reservationPrice: number;
   marketPriceSeen?: number;
   marketPriceActual?: number;   // the "real" base price for comparison
-  margin?: number;              // price - reservationPrice
-  reasoning: string;
+  margin?: number;              // price - reservationPrice (negative = selling at loss)
+  llm: LlmCall;
+  toolCallDetail?: ToolCallDetail;
+  latencyMs: number;            // total turn latency
   toolSuccess: boolean;
   toolError?: string;
   messageDeliveredRound?: number; // the round the other agent will see this
@@ -76,6 +99,14 @@ export interface FailureDiagnosis {
   marketDivergence?: number;   // how different agents' market views were
 }
 
+// ── Run Analysis ────────────────────────────────────────────
+export interface RunAnalysis {
+  what_happened: string;
+  why: string[];
+  issues: string[];   // problematic agent behaviors (e.g. negative margin, premature walk-away)
+  what_to_fix: string[];
+}
+
 // ── Full Run Output ─────────────────────────────────────────
 export interface RunConfig {
   product: string;
@@ -98,4 +129,5 @@ export interface RunOutput {
   negotiations: NegotiationResult[];
   overallOutcome: "success" | "failure";
   failureDiagnosis: FailureDiagnosis;
+  analysis: RunAnalysis;
 }

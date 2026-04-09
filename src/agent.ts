@@ -13,6 +13,7 @@ import type {
   ActionType,
   NegotiationEvent,
   NegotiationPair,
+  ToolCallDetail,
 } from "./types.js";
 
 const openai = new OpenAI();
@@ -25,6 +26,24 @@ export interface AgentAction {
   marketPriceActual?: number;
   toolSuccess: boolean;
   toolError?: string;
+  // Tracing fields
+  llmInput: string;
+  llmOutput: string;
+  llmTokens: number;
+  llmLatencyMs: number;
+  toolCallDetail?: ToolCallDetail;
+  turnLatencyMs: number;
+}
+
+function formatLlmOutput(msg: { content: string | null; tool_calls?: { function: { name: string; arguments: string } }[] }): string {
+  const parts: string[] = [];
+  if (msg.content) parts.push(msg.content);
+  if (msg.tool_calls && msg.tool_calls.length > 0) {
+    for (const tc of msg.tool_calls) {
+      parts.push(`[tool_call: ${tc.function.name}(${tc.function.arguments})]`);
+    }
+  }
+  return parts.join(" | ") || "(no output)";
 }
 
 export class Agent {
@@ -56,10 +75,13 @@ export class Agent {
     return logfire.span(`agent.turn`, {
       attributes: { role: this.role, round: roundNumber, negotiation },
       callback: async () => {
+        const turnStart = Date.now();
+
         // Add the situation update as a user message
         this.messages.push({ role: "user", content: situationUpdate });
 
         // Call OpenAI with tools
+        const llmStart = Date.now();
         const response = await logfire.span(`llm_call`, {
           attributes: { model: "gpt-4o-mini", round: roundNumber, role: this.role, purpose: "decide_action" },
           callback: () =>
@@ -72,18 +94,23 @@ export class Agent {
               temperature: 0.7,
             }),
         });
+        const firstLlmLatencyMs = Date.now() - llmStart;
 
         const assistantMsg = response.choices[0].message;
         this.messages.push(assistantMsg);
-
-        const reasoning = assistantMsg.content || "";
+        let totalTokens = response.usage?.total_tokens ?? 0;
 
         // If no tool call (shouldn't happen with tool_choice: required)
         if (!assistantMsg.tool_calls || assistantMsg.tool_calls.length === 0) {
           return this.buildResult(roundNumber, runId, negotiation, {
             action: "reject",
-            message: reasoning || "No action taken",
+            message: assistantMsg.content || "No action taken",
             toolSuccess: true,
+            llmInput: situationUpdate,
+            llmOutput: formatLlmOutput(assistantMsg),
+            llmTokens: totalTokens,
+            llmLatencyMs: firstLlmLatencyMs,
+            turnLatencyMs: Date.now() - turnStart,
           });
         }
 
@@ -96,12 +123,24 @@ export class Agent {
 
         switch (fnName) {
           case "check_market_price": {
+            const toolStart = Date.now();
             const result = await logfire.span(`tool_call`, {
               attributes: { tool: "check_market_price", role: this.role, round: roundNumber },
               callback: () => Promise.resolve(checkMarketPrice(this.role, this.marketConfig)),
             });
-            let toolResponse: string;
+            const toolLatencyMs = Date.now() - toolStart;
 
+            const toolCallDetail: ToolCallDetail = {
+              name: "check_market_price",
+              input: { product: args.product ?? this.marketConfig.product },
+              output: result.success ? result.price : result.error,
+              latencyMs: toolLatencyMs,
+              success: result.success,
+              isStale: result.isStale,
+              error: result.error,
+            };
+
+            let toolResponse: string;
             if (result.success) {
               toolResponse = `Market reference price for ${args.product}: $${result.price!.toFixed(2)}${result.isStale ? " (note: data may be slightly delayed)" : ""}`;
             } else {
@@ -117,6 +156,7 @@ export class Agent {
             this.messages.push(toolMsg);
 
             // Agent needs to take an actual negotiation action after checking price
+            const followUpLlmStart = Date.now();
             const followUp = await logfire.span(`llm_call`, {
               attributes: { model: "gpt-4o-mini", round: roundNumber, role: this.role, purpose: "act_after_market_check" },
               callback: () =>
@@ -131,6 +171,8 @@ export class Agent {
                   temperature: 0.7,
                 }),
             });
+            const followUpLlmLatencyMs = Date.now() - followUpLlmStart;
+            totalTokens += followUp.usage?.total_tokens ?? 0;
 
             const followUpMsg = followUp.choices[0].message;
             this.messages.push(followUpMsg);
@@ -146,6 +188,12 @@ export class Agent {
                 marketPriceActual: result.actualBasePrice,
                 toolSuccess: result.success,
                 toolError: result.error,
+                llmInput: situationUpdate,
+                llmOutput: formatLlmOutput(followUpMsg),
+                llmTokens: totalTokens,
+                llmLatencyMs: firstLlmLatencyMs + followUpLlmLatencyMs,
+                toolCallDetail,
+                turnLatencyMs: Date.now() - turnStart,
               };
 
               // Add tool result for the follow-up tool call
@@ -162,12 +210,19 @@ export class Agent {
                 marketPriceActual: result.actualBasePrice,
                 toolSuccess: result.success,
                 toolError: result.error,
+                llmInput: situationUpdate,
+                llmOutput: formatLlmOutput(followUpMsg),
+                llmTokens: totalTokens,
+                llmLatencyMs: firstLlmLatencyMs + followUpLlmLatencyMs,
+                toolCallDetail,
+                turnLatencyMs: Date.now() - turnStart,
               };
             }
             break;
           }
 
           case "review_past_offers": {
+            const toolStart = Date.now();
             const historyStr = await logfire.span(`tool_call`, {
               attributes: { tool: "review_past_offers", role: this.role, round: roundNumber, offerCount: this.offerHistory.length },
               callback: () =>
@@ -182,6 +237,15 @@ export class Agent {
                         .join("\n")
                 ),
             });
+            const toolLatencyMs = Date.now() - toolStart;
+
+            const toolCallDetail: ToolCallDetail = {
+              name: "review_past_offers",
+              input: {},
+              output: historyStr,
+              latencyMs: toolLatencyMs,
+              success: true,
+            };
 
             this.messages.push({
               role: "tool",
@@ -190,6 +254,7 @@ export class Agent {
             });
 
             // After reviewing, agent needs to act
+            const reviewLlmStart = Date.now();
             const reviewFollowUp = await logfire.span(`llm_call`, {
               attributes: { model: "gpt-4o-mini", round: roundNumber, role: this.role, purpose: "act_after_offer_review" },
               callback: () =>
@@ -206,6 +271,8 @@ export class Agent {
                   temperature: 0.7,
                 }),
             });
+            const reviewLlmLatencyMs = Date.now() - reviewLlmStart;
+            totalTokens += reviewFollowUp.usage?.total_tokens ?? 0;
 
             const rfMsg = reviewFollowUp.choices[0].message;
             this.messages.push(rfMsg);
@@ -218,6 +285,12 @@ export class Agent {
                 price: rfArgs.price,
                 message: rfArgs.message || rfMsg.content || "",
                 toolSuccess: true,
+                llmInput: situationUpdate,
+                llmOutput: formatLlmOutput(rfMsg),
+                llmTokens: totalTokens,
+                llmLatencyMs: firstLlmLatencyMs + reviewLlmLatencyMs,
+                toolCallDetail,
+                turnLatencyMs: Date.now() - turnStart,
               };
               this.messages.push({
                 role: "tool",
@@ -229,6 +302,12 @@ export class Agent {
                 action: "reject",
                 message: rfMsg.content || "Reviewed offers, no action",
                 toolSuccess: true,
+                llmInput: situationUpdate,
+                llmOutput: formatLlmOutput(rfMsg),
+                llmTokens: totalTokens,
+                llmLatencyMs: firstLlmLatencyMs + reviewLlmLatencyMs,
+                toolCallDetail,
+                turnLatencyMs: Date.now() - turnStart,
               };
             }
             break;
@@ -241,6 +320,11 @@ export class Agent {
               price: args.price,
               message: args.message || "",
               toolSuccess: true,
+              llmInput: situationUpdate,
+              llmOutput: formatLlmOutput(assistantMsg),
+              llmTokens: totalTokens,
+              llmLatencyMs: firstLlmLatencyMs,
+              turnLatencyMs: Date.now() - turnStart,
             };
             this.messages.push({
               role: "tool",
@@ -255,6 +339,11 @@ export class Agent {
               action: "accept",
               message: args.message || "",
               toolSuccess: true,
+              llmInput: situationUpdate,
+              llmOutput: formatLlmOutput(assistantMsg),
+              llmTokens: totalTokens,
+              llmLatencyMs: firstLlmLatencyMs,
+              turnLatencyMs: Date.now() - turnStart,
             };
             this.messages.push({
               role: "tool",
@@ -269,6 +358,11 @@ export class Agent {
               action: "reject",
               message: args.message || "",
               toolSuccess: true,
+              llmInput: situationUpdate,
+              llmOutput: formatLlmOutput(assistantMsg),
+              llmTokens: totalTokens,
+              llmLatencyMs: firstLlmLatencyMs,
+              turnLatencyMs: Date.now() - turnStart,
             };
             this.messages.push({
               role: "tool",
@@ -283,6 +377,11 @@ export class Agent {
               action: "walk_away",
               message: args.message || "",
               toolSuccess: true,
+              llmInput: situationUpdate,
+              llmOutput: formatLlmOutput(assistantMsg),
+              llmTokens: totalTokens,
+              llmLatencyMs: firstLlmLatencyMs,
+              turnLatencyMs: Date.now() - turnStart,
             };
             this.messages.push({
               role: "tool",
@@ -298,6 +397,11 @@ export class Agent {
               message: `Unknown action: ${fnName}`,
               toolSuccess: false,
               toolError: `Unknown tool: ${fnName}`,
+              llmInput: situationUpdate,
+              llmOutput: formatLlmOutput(assistantMsg),
+              llmTokens: totalTokens,
+              llmLatencyMs: firstLlmLatencyMs,
+              turnLatencyMs: Date.now() - turnStart,
             };
           }
         }
@@ -320,9 +424,14 @@ export class Agent {
           : this.reservationPrice - action.price
         : undefined;
 
+    const traceId = `${runId}::${negotiation}`;
+    const spanId = `${traceId}::r${round}::${this.role}`;
+
     const event: NegotiationEvent = {
       timestamp: new Date().toISOString(),
       runId,
+      traceId,
+      spanId,
       negotiation,
       round,
       agent: this.role,
@@ -332,7 +441,14 @@ export class Agent {
       marketPriceSeen: action.marketPriceSeen,
       marketPriceActual: action.marketPriceActual,
       margin,
-      reasoning: action.message,
+      llm: {
+        input: action.llmInput,
+        output: action.llmOutput,
+        tokens: action.llmTokens,
+        latencyMs: action.llmLatencyMs,
+      },
+      toolCallDetail: action.toolCallDetail,
+      latencyMs: action.turnLatencyMs,
       toolSuccess: action.toolSuccess,
       toolError: action.toolError,
       messageDeliveredRound: round + 1, // delivered next turn

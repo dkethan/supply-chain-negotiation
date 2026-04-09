@@ -1,0 +1,368 @@
+{
+  "runId": "run_1775757287880_y7syf5",
+  "startedAt": "2026-04-09T17:54:47.880Z",
+  "finishedAt": "2026-04-09T17:55:08.343Z",
+  "durationMs": 20463,
+  "config": {
+    "product": "Titanium Alloy",
+    "marketBasePrice": 200,
+    "agents": [
+      {
+        "role": "supplier",
+        "reservationPrice": 190
+      },
+      {
+        "role": "manufacturer",
+        "reservationPrice": 180
+      },
+      {
+        "role": "retailer",
+        "reservationPrice": 260
+      }
+    ],
+    "maxRoundsPerNegotiation": 8,
+    "marketNoiseRange": 0.15,
+    "toolFailureRate": 0.1
+  },
+  "negotiations": [
+    {
+      "pair": "supplier_manufacturer",
+      "events": [
+        {
+          "timestamp": "2026-04-09T17:54:50.344Z",
+          "runId": "run_1775757287880_y7syf5",
+          "traceId": "run_1775757287880_y7syf5::supplier_manufacturer",
+          "spanId": "run_1775757287880_y7syf5::supplier_manufacturer::r1::supplier",
+          "negotiation": "supplier_manufacturer",
+          "round": 1,
+          "agent": "supplier",
+          "action": "make_offer",
+          "price": 220,
+          "reservationPrice": 190,
+          "margin": 30,
+          "llm": {
+            "input": "Negotiation starting. You are the supplier negotiating with the manufacturer. You go first. Make your opening move.",
+            "output": "[tool_call: make_offer({\"price\":220,\"message\":\"I am offering a price of $220 for the Titanium Alloy, reflecting the high quality and value of the material.\"})]",
+            "tokens": 538,
+            "latencyMs": 2462
+          },
+          "latencyMs": 2462,
+          "toolSuccess": true,
+          "messageDeliveredRound": 2
+        },
+        {
+          "timestamp": "2026-04-09T17:54:51.388Z",
+          "runId": "run_1775757287880_y7syf5",
+          "traceId": "run_1775757287880_y7syf5::supplier_manufacturer",
+          "spanId": "run_1775757287880_y7syf5::supplier_manufacturer::r2::manufacturer",
+          "negotiation": "supplier_manufacturer",
+          "round": 2,
+          "agent": "manufacturer",
+          "action": "reject",
+          "reservationPrice": 180,
+          "llm": {
+            "input": "Round 2. The supplier has offered $220.00. They said: \"I am offering a price of $220 for the Titanium Alloy, reflecting the high quality and value of the material.\". You may accept, reject, counter with your own offer, or walk away.",
+            "output": "[tool_call: reject_offer({\"message\":\"The offered price of $220 is above my maximum acceptable price. I would like to negotiate further.\"})]",
+            "tokens": 551,
+            "latencyMs": 1043
+          },
+          "latencyMs": 1043,
+          "toolSuccess": true,
+          "messageDeliveredRound": 3
+        },
+        {
+          "timestamp": "2026-04-09T17:54:53.852Z",
+          "runId": "run_1775757287880_y7syf5",
+          "traceId": "run_1775757287880_y7syf5::supplier_manufacturer",
+          "spanId": "run_1775757287880_y7syf5::supplier_manufacturer::r3::supplier",
+          "negotiation": "supplier_manufacturer",
+          "round": 3,
+          "agent": "supplier",
+          "action": "make_offer",
+          "price": 210,
+          "reservationPrice": 190,
+          "marketPriceSeen": 204.65,
+          "marketPriceActual": 200,
+          "margin": 20,
+          "llm": {
+            "input": "Round 3. The manufacturer rejected your offer. They said: \"The offered price of $220 is above my maximum acceptable price. I would like to negotiate further.\". You may make a new offer, check market price, or walk away.",
+            "output": "[tool_call: make_offer({\"price\":210,\"message\":\"Based on the market reference price, I'm willing to adjust my offer to $210 for the Titanium Alloy.\"})]",
+            "tokens": 1249,
+            "latencyMs": 2462
+          },
+          "toolCallDetail": {
+            "name": "check_market_price",
+            "input": {
+              "product": "Titanium Alloy"
+            },
+            "output": 204.65,
+            "latencyMs": 1,
+            "success": true,
+            "isStale": false
+          },
+          "latencyMs": 2463,
+          "toolSuccess": true,
+          "messageDeliveredRound": 4
+        },
+        {
+          "timestamp": "2026-04-09T17:54:55.161Z",
+          "runId": "run_1775757287880_y7syf5",
+          "traceId": "run_1775757287880_y7syf5::supplier_manufacturer",
+          "spanId": "run_1775757287880_y7syf5::supplier_manufacturer::r4::manufacturer",
+          "negotiation": "supplier_manufacturer",
+          "round": 4,
+          "agent": "manufacturer",
+          "action": "reject",
+          "reservationPrice": 180,
+          "llm": {
+            "input": "Round 4. The supplier has offered $210.00. They said: \"Based on the market reference price, I'm willing to adjust my offer to $210 for the Titanium Alloy.\". You may accept, reject, counter with your own offer, or walk away.",
+            "output": "[tool_call: reject_offer({\"message\":\"While I appreciate the adjustment, the offer of $210 is still above my maximum price. I'm looking for a more competitive rate.\"})]",
+            "tokens": 659,
+            "latencyMs": 1309
+          },
+          "latencyMs": 1309,
+          "toolSuccess": true,
+          "messageDeliveredRound": 5
+        },
+        {
+          "timestamp": "2026-04-09T17:54:56.673Z",
+          "runId": "run_1775757287880_y7syf5",
+          "traceId": "run_1775757287880_y7syf5::supplier_manufacturer",
+          "spanId": "run_1775757287880_y7syf5::supplier_manufacturer::r5::supplier",
+          "negotiation": "supplier_manufacturer",
+          "round": 5,
+          "agent": "supplier",
+          "action": "make_offer",
+          "price": 200,
+          "reservationPrice": 190,
+          "margin": 10,
+          "llm": {
+            "input": "Round 5. The manufacturer rejected your offer. They said: \"While I appreciate the adjustment, the offer of $210 is still above my maximum price. I'm looking for a more competitive rate.\". You may make a new offer, check market price, or walk away.",
+            "output": "[tool_call: make_offer({\"price\":200,\"message\":\"I understand your concerns and am willing to adjust my offer to $200 for the Titanium Alloy to keep our negotiation moving forward.\"})]",
+            "tokens": 796,
+            "latencyMs": 1511
+          },
+          "latencyMs": 1511,
+          "toolSuccess": true,
+          "messageDeliveredRound": 6
+        },
+        {
+          "timestamp": "2026-04-09T17:54:58.420Z",
+          "runId": "run_1775757287880_y7syf5",
+          "traceId": "run_1775757287880_y7syf5::supplier_manufacturer",
+          "spanId": "run_1775757287880_y7syf5::supplier_manufacturer::r6::manufacturer",
+          "negotiation": "supplier_manufacturer",
+          "round": 6,
+          "agent": "manufacturer",
+          "action": "reject",
+          "reservationPrice": 180,
+          "llm": {
+            "input": "Round 6. The supplier has offered $200.00. They said: \"I understand your concerns and am willing to adjust my offer to $200 for the Titanium Alloy to keep our negotiation moving forward.\". You may accept, reject, counter with your own offer, or walk away.",
+            "output": "[tool_call: reject_offer({\"message\":\"Thank you for the updated offer, but $200 is still above my maximum acceptable price. I hope we can find a lower price.\"})]",
+            "tokens": 772,
+            "latencyMs": 1747
+          },
+          "latencyMs": 1747,
+          "toolSuccess": true,
+          "messageDeliveredRound": 7
+        },
+        {
+          "timestamp": "2026-04-09T17:55:00.163Z",
+          "runId": "run_1775757287880_y7syf5",
+          "traceId": "run_1775757287880_y7syf5::supplier_manufacturer",
+          "spanId": "run_1775757287880_y7syf5::supplier_manufacturer::r7::supplier",
+          "negotiation": "supplier_manufacturer",
+          "round": 7,
+          "agent": "supplier",
+          "action": "walk_away",
+          "reservationPrice": 190,
+          "llm": {
+            "input": "Round 7. The manufacturer rejected your offer. They said: \"Thank you for the updated offer, but $200 is still above my maximum acceptable price. I hope we can find a lower price.\". You may make a new offer, check market price, or walk away.",
+            "output": "[tool_call: walk_away({\"message\":\"Unfortunately, I cannot accept an offer below my minimum acceptable price. I will need to walk away from this negotiation.\"})]",
+            "tokens": 909,
+            "latencyMs": 1742
+          },
+          "latencyMs": 1742,
+          "toolSuccess": true,
+          "messageDeliveredRound": 8
+        }
+      ],
+      "outcome": "walk_away",
+      "rounds": 7,
+      "agentA": "supplier",
+      "agentB": "manufacturer"
+    },
+    {
+      "pair": "manufacturer_retailer",
+      "events": [
+        {
+          "timestamp": "2026-04-09T17:55:01.208Z",
+          "runId": "run_1775757287880_y7syf5",
+          "traceId": "run_1775757287880_y7syf5::manufacturer_retailer",
+          "spanId": "run_1775757287880_y7syf5::manufacturer_retailer::r1::manufacturer",
+          "negotiation": "manufacturer_retailer",
+          "round": 1,
+          "agent": "manufacturer",
+          "action": "make_offer",
+          "price": 300,
+          "reservationPrice": 250,
+          "margin": -50,
+          "llm": {
+            "input": "Negotiation starting. You are the manufacturer negotiating with the retailer. You go first. Make your opening move.",
+            "output": "[tool_call: make_offer({\"price\":300,\"message\":\"Given the quality of our Titanium Alloy and current market conditions, I am offering a price of $300. This reflects our production costs and ensures a fair margin.\"})]",
+            "tokens": 511,
+            "latencyMs": 1044
+          },
+          "latencyMs": 1044,
+          "toolSuccess": true,
+          "messageDeliveredRound": 2
+        },
+        {
+          "timestamp": "2026-04-09T17:55:02.422Z",
+          "runId": "run_1775757287880_y7syf5",
+          "traceId": "run_1775757287880_y7syf5::manufacturer_retailer",
+          "spanId": "run_1775757287880_y7syf5::manufacturer_retailer::r2::retailer",
+          "negotiation": "manufacturer_retailer",
+          "round": 2,
+          "agent": "retailer",
+          "action": "reject",
+          "reservationPrice": 260,
+          "llm": {
+            "input": "Round 2. The manufacturer has offered $300.00. They said: \"Given the quality of our Titanium Alloy and current market conditions, I am offering a price of $300. This reflects our production costs and ensures a fair margin.\". You may accept, reject, counter with your own offer, or walk away.",
+            "output": "[tool_call: reject_offer({\"message\":\"Thank you for your offer, but $300 is above my maximum acceptable price and does not leave room for retail margins.\"})]",
+            "tokens": 562,
+            "latencyMs": 1212
+          },
+          "latencyMs": 1212,
+          "toolSuccess": true,
+          "messageDeliveredRound": 3
+        },
+        {
+          "timestamp": "2026-04-09T17:55:04.505Z",
+          "runId": "run_1775757287880_y7syf5",
+          "traceId": "run_1775757287880_y7syf5::manufacturer_retailer",
+          "spanId": "run_1775757287880_y7syf5::manufacturer_retailer::r3::manufacturer",
+          "negotiation": "manufacturer_retailer",
+          "round": 3,
+          "agent": "manufacturer",
+          "action": "make_offer",
+          "price": 275,
+          "reservationPrice": 250,
+          "marketPriceSeen": 243.41,
+          "marketPriceActual": 300,
+          "margin": -25,
+          "llm": {
+            "input": "Round 3. The retailer rejected your offer. They said: \"Thank you for your offer, but $300 is above my maximum acceptable price and does not leave room for retail margins.\". You may make a new offer, check market price, or walk away.",
+            "output": "[tool_call: make_offer({\"price\":275,\"message\":\"I appreciate your feedback. Considering the current market price of $243.41, I'm willing to adjust my offer to $275 to accommodate your retail margins while ensuring a fair return on my production costs.\"})]",
+            "tokens": 1231,
+            "latencyMs": 2083
+          },
+          "toolCallDetail": {
+            "name": "check_market_price",
+            "input": {
+              "product": "Titanium Alloy"
+            },
+            "output": 243.41,
+            "latencyMs": 0,
+            "success": true,
+            "isStale": true
+          },
+          "latencyMs": 2083,
+          "toolSuccess": true,
+          "messageDeliveredRound": 4
+        },
+        {
+          "timestamp": "2026-04-09T17:55:06.379Z",
+          "runId": "run_1775757287880_y7syf5",
+          "traceId": "run_1775757287880_y7syf5::manufacturer_retailer",
+          "spanId": "run_1775757287880_y7syf5::manufacturer_retailer::r4::retailer",
+          "negotiation": "manufacturer_retailer",
+          "round": 4,
+          "agent": "retailer",
+          "action": "reject",
+          "reservationPrice": 260,
+          "llm": {
+            "input": "Round 4. The manufacturer has offered $275.00. They said: \"I appreciate your feedback. Considering the current market price of $243.41, I'm willing to adjust my offer to $275 to accommodate your retail margins while ensuring a fair return on my production costs.\". You may accept, reject, counter with your own offer, or walk away.",
+            "output": "[tool_call: reject_offer({\"message\":\"Thank you for the revised offer, but $275 is still above my maximum acceptable price. I need a lower price to maintain retail profitability.\"})]",
+            "tokens": 691,
+            "latencyMs": 1873
+          },
+          "latencyMs": 1874,
+          "toolSuccess": true,
+          "messageDeliveredRound": 5
+        },
+        {
+          "timestamp": "2026-04-09T17:55:07.350Z",
+          "runId": "run_1775757287880_y7syf5",
+          "traceId": "run_1775757287880_y7syf5::manufacturer_retailer",
+          "spanId": "run_1775757287880_y7syf5::manufacturer_retailer::r5::manufacturer",
+          "negotiation": "manufacturer_retailer",
+          "round": 5,
+          "agent": "manufacturer",
+          "action": "make_offer",
+          "price": 260,
+          "reservationPrice": 250,
+          "margin": -10,
+          "llm": {
+            "input": "Round 5. The retailer rejected your offer. They said: \"Thank you for the revised offer, but $275 is still above my maximum acceptable price. I need a lower price to maintain retail profitability.\". You may make a new offer, check market price, or walk away.",
+            "output": "[tool_call: make_offer({\"price\":260,\"message\":\"I understand your position and am willing to meet you halfway. My revised offer of $260 reflects both our production costs and your need for retail profitability.\"})]",
+            "tokens": 808,
+            "latencyMs": 971
+          },
+          "latencyMs": 971,
+          "toolSuccess": true,
+          "messageDeliveredRound": 6
+        },
+        {
+          "timestamp": "2026-04-09T17:55:08.343Z",
+          "runId": "run_1775757287880_y7syf5",
+          "traceId": "run_1775757287880_y7syf5::manufacturer_retailer",
+          "spanId": "run_1775757287880_y7syf5::manufacturer_retailer::r6::retailer",
+          "negotiation": "manufacturer_retailer",
+          "round": 6,
+          "agent": "retailer",
+          "action": "accept",
+          "reservationPrice": 260,
+          "llm": {
+            "input": "Round 6. The manufacturer has offered $260.00. They said: \"I understand your position and am willing to meet you halfway. My revised offer of $260 reflects both our production costs and your need for retail profitability.\". You may accept, reject, counter with your own offer, or walk away.",
+            "output": "[tool_call: accept_offer({\"message\":\"I appreciate your flexibility. I accept the offer of $260 to finalize the deal.\"})]",
+            "tokens": 799,
+            "latencyMs": 992
+          },
+          "latencyMs": 992,
+          "toolSuccess": true,
+          "messageDeliveredRound": 7
+        }
+      ],
+      "outcome": "deal",
+      "finalPrice": 260,
+      "rounds": 6,
+      "agentA": "manufacturer",
+      "agentB": "retailer"
+    }
+  ],
+  "overallOutcome": "failure",
+  "failureDiagnosis": {
+    "type": "systemic",
+    "description": "No deal was possible: supplier's minimum ($190.00) exceeds manufacturer's maximum ($180.00). The price gap of $10.00 makes any deal impossible.",
+    "priceGap": 10
+  },
+  "analysis": {
+    "what_happened": "1/2 negotiations succeeded (supplier_manufacturer=walk_away, manufacturer_retailer=deal).",
+    "why": [
+      "supplier_manufacturer: supplier walked away in round 7 — no ZOPA: seller min ($190.00) > buyer max ($180.00) by $10.00; last offer was $200.00",
+      "manufacturer_retailer: deal at $260.00 in 6 rounds — ZOPA was $10.00 (seller min $250.00 → buyer max $260.00); seller margin: +$10.00, buyer margin: +$0.00"
+    ],
+    "issues": [
+      "[DEADLOCK SIGNAL] manufacturer rejected 3 times without making a counter-offer in supplier_manufacturer.",
+      "[NEGATIVE MARGIN] manufacturer offered $300.00 in round 1 of manufacturer_retailer — margin was -50.00 (below reservation price $250.00). Agent accepted/proposed a loss-making deal.",
+      "[NEGATIVE MARGIN] manufacturer offered $275.00 in round 3 of manufacturer_retailer — margin was -25.00 (below reservation price $250.00). Agent accepted/proposed a loss-making deal.",
+      "[NEGATIVE MARGIN] manufacturer offered $260.00 in round 5 of manufacturer_retailer — margin was -10.00 (below reservation price $250.00). Agent accepted/proposed a loss-making deal.",
+      "[STALE DATA] 1 agent(s) received stale market prices in manufacturer_retailer, potentially anchoring negotiations incorrectly."
+    ],
+    "what_to_fix": [
+      "manufacturer should counter-offer instead of repeatedly rejecting — pure rejection leads to deadlock.",
+      "Constrain manufacturer: do not offer or accept prices that violate your reservation price (margin < 0)."
+    ]
+  }
+}

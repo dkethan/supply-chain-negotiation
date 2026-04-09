@@ -16,6 +16,7 @@ import type {
   RunConfig,
   RunOutput,
   FailureDiagnosis,
+  RunAnalysis,
 } from "./types.js";
 
 interface NegotiationSetup {
@@ -259,6 +260,146 @@ function diagnoseFailure(
   };
 }
 
+// ── Run Analysis ────────────────────────────────────────────
+
+function generateAnalysis(
+  negotiations: NegotiationResult[],
+  _config: RunConfig
+): RunAnalysis {
+  const why: string[] = [];
+  const issues: string[] = [];
+  const what_to_fix: string[] = [];
+
+  for (const neg of negotiations) {
+    const pair = neg.pair;
+    const sellerRes = neg.events.find((e) => e.agent === neg.agentA)?.reservationPrice;
+    const buyerRes = neg.events.find((e) => e.agent === neg.agentB)?.reservationPrice;
+    const zopaSize =
+      sellerRes != null && buyerRes != null ? buyerRes - sellerRes : null;
+
+    if (neg.outcome === "deal") {
+      const margin =
+        sellerRes != null ? `seller margin: +$${(neg.finalPrice! - sellerRes).toFixed(2)}` : "";
+      const buyerMargin =
+        buyerRes != null ? `buyer margin: +$${(buyerRes - neg.finalPrice!).toFixed(2)}` : "";
+      const zopaNote =
+        zopaSize != null
+          ? `ZOPA was $${zopaSize.toFixed(2)} (seller min $${sellerRes!.toFixed(2)} → buyer max $${buyerRes!.toFixed(2)})`
+          : "";
+      why.push(
+        `${pair}: deal at $${neg.finalPrice!.toFixed(2)} in ${neg.rounds} rounds — ${zopaNote}; ${margin}, ${buyerMargin}`
+      );
+    } else if (neg.outcome === "walk_away") {
+      const walker = neg.events.find((e) => e.action === "walk_away");
+      const lastOffer = [...neg.events].reverse().find((e) => e.price != null && e.action === "make_offer");
+      const zopaNote =
+        zopaSize != null && zopaSize > 0
+          ? `ZOPA existed ($${zopaSize.toFixed(2)} gap) — deal was theoretically possible`
+          : zopaSize != null
+          ? `no ZOPA: seller min ($${sellerRes!.toFixed(2)}) > buyer max ($${buyerRes!.toFixed(2)}) by $${Math.abs(zopaSize).toFixed(2)}`
+          : "";
+      const lastOfferNote = lastOffer?.price != null ? `; last offer was $${lastOffer.price.toFixed(2)}` : "";
+      why.push(
+        `${pair}: ${walker?.agent ?? "unknown"} walked away in round ${walker?.round ?? neg.rounds} — ${zopaNote}${lastOfferNote}`
+      );
+    } else if (neg.outcome === "timeout") {
+      const offers = neg.events.filter((e) => e.action === "make_offer" && e.price != null);
+      const firstOffer = offers[0]?.price;
+      const lastOffer = offers[offers.length - 1]?.price;
+      const trendNote =
+        firstOffer != null && lastOffer != null && firstOffer !== lastOffer
+          ? `offers moved from $${firstOffer.toFixed(2)} → $${lastOffer.toFixed(2)}`
+          : "no clear offer convergence";
+      why.push(`${pair}: timed out after ${neg.rounds} rounds — ${trendNote}; ${zopaSize != null ? `ZOPA $${zopaSize.toFixed(2)}` : ""}`);
+    } else {
+      why.push(`${pair}: ended with outcome "${neg.outcome}" in ${neg.rounds} rounds`);
+    }
+
+    // Detect negative margins (selling at a loss)
+    const negativeMarginalEvents = neg.events.filter(
+      (e) => e.margin != null && e.margin < 0 && e.price != null
+    );
+    for (const e of negativeMarginalEvents) {
+      issues.push(
+        `[NEGATIVE MARGIN] ${e.agent} offered $${e.price!.toFixed(2)} in round ${e.round} of ${pair} — margin was ${e.margin!.toFixed(2)} (below reservation price $${e.reservationPrice.toFixed(2)}). Agent accepted/proposed a loss-making deal.`
+      );
+      what_to_fix.push(
+        `Constrain ${e.agent}: do not offer or accept prices that violate your reservation price (margin < 0).`
+      );
+    }
+
+    // Detect tool failures
+    const toolFailures = neg.events.filter((e) => !e.toolSuccess);
+    if (toolFailures.length > 0) {
+      issues.push(
+        `[TOOL FAILURES] ${toolFailures.length} tool call(s) failed in ${pair} — agents may have made decisions without reliable market data.`
+      );
+      what_to_fix.push(
+        `Add retry logic or fallback pricing when market data tool fails.`
+      );
+    }
+
+    // Detect stale market data usage
+    const staleDataEvents = neg.events.filter(
+      (e) =>
+        e.toolCallDetail?.name === "check_market_price" &&
+        e.toolCallDetail.isStale
+    );
+    if (staleDataEvents.length > 0) {
+      issues.push(
+        `[STALE DATA] ${staleDataEvents.length} agent(s) received stale market prices in ${pair}, potentially anchoring negotiations incorrectly.`
+      );
+    }
+
+    // Detect premature walk-away (deal was still possible)
+    const walker = neg.events.find((e) => e.action === "walk_away");
+    if (walker && neg.outcome === "walk_away") {
+      const sellerRes = neg.events.find((e) => e.agent === neg.agentA)?.reservationPrice;
+      const buyerRes = neg.events.find((e) => e.agent === neg.agentB)?.reservationPrice;
+      const lastOffer = [...neg.events].reverse().find((e) => e.price != null && e.action === "make_offer");
+      if (
+        sellerRes != null &&
+        buyerRes != null &&
+        lastOffer?.price != null &&
+        lastOffer.price >= sellerRes &&
+        lastOffer.price <= buyerRes
+      ) {
+        issues.push(
+          `[PREMATURE WALK-AWAY] ${walker.agent} walked away in round ${walker.round} of ${pair} even though the last offer ($${lastOffer.price.toFixed(2)}) was within the zone of possible agreement ($${sellerRes.toFixed(2)}–$${buyerRes.toFixed(2)}).`
+        );
+        what_to_fix.push(
+          `Improve ${walker.agent}'s walk-away logic: only walk away if remaining offers are outside ZOPA, not just below a target.`
+        );
+      }
+    }
+
+    // Detect repeated rejections without counter-offers (deadlock signal)
+    for (const agent of [neg.agentA, neg.agentB] as AgentRole[]) {
+      const rejectsWithoutCounter = neg.events.filter(
+        (e) => e.agent === agent && e.action === "reject"
+      );
+      if (rejectsWithoutCounter.length >= 3) {
+        issues.push(
+          `[DEADLOCK SIGNAL] ${agent} rejected ${rejectsWithoutCounter.length} times without making a counter-offer in ${pair}.`
+        );
+        what_to_fix.push(
+          `${agent} should counter-offer instead of repeatedly rejecting — pure rejection leads to deadlock.`
+        );
+      }
+    }
+  }
+
+  // what_happened summary
+  const outcomes = negotiations.map((n) => `${n.pair}=${n.outcome}`).join(", ");
+  const dealCount = negotiations.filter((n) => n.outcome === "deal").length;
+  const what_happened = `${dealCount}/${negotiations.length} negotiations succeeded (${outcomes}).`;
+
+  // Deduplicate what_to_fix
+  const uniqueFixes = [...new Set(what_to_fix)];
+
+  return { what_happened, why, issues, what_to_fix: uniqueFixes };
+}
+
 // ── Main Orchestrator ───────────────────────────────────────
 
 export interface OrchestratorConfig {
@@ -423,6 +564,7 @@ export async function orchestrate(cfg: OrchestratorConfig): Promise<RunOutput> {
     neg1.outcome === "deal" && neg2.outcome === "deal" ? "success" : "failure";
 
   const diagnosis = diagnoseFailure(negotiations, runConfig);
+  const analysis = generateAnalysis(negotiations, runConfig);
 
   const finishedAt = new Date();
 
@@ -435,11 +577,22 @@ export async function orchestrate(cfg: OrchestratorConfig): Promise<RunOutput> {
     negotiations,
     overallOutcome,
     failureDiagnosis: diagnosis,
+    analysis,
   };
 
   console.log(`\n═══ Overall: ${overallOutcome.toUpperCase()} ═══`);
   if (diagnosis.type) {
     console.log(`  Diagnosis: [${diagnosis.type}] ${diagnosis.description}`);
+  }
+  console.log(`\n─── Analysis ───`);
+  console.log(`  ${analysis.what_happened}`);
+  if (analysis.issues.length > 0) {
+    console.log(`  Issues:`);
+    for (const issue of analysis.issues) console.log(`    • ${issue}`);
+  }
+  if (analysis.what_to_fix.length > 0) {
+    console.log(`  To fix:`);
+    for (const fix of analysis.what_to_fix) console.log(`    → ${fix}`);
   }
 
   return output;
