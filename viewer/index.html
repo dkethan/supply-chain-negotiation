@@ -6,28 +6,28 @@
 <title>Supply Chain Negotiation — Trace Viewer</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
 
   :root {
-    --bg: #0c0c0e;
-    --surface: #16161a;
-    --surface2: #1e1e24;
-    --border: #2a2a32;
-    --text: #e2e2e6;
-    --text-muted: #7a7a86;
-    --accent: #6ee7b7;
-    --accent-dim: #2d6e56;
-    --red: #f87171;
-    --red-dim: #6e2d2d;
-    --yellow: #fbbf24;
-    --yellow-dim: #6e5a1a;
-    --blue: #60a5fa;
-    --blue-dim: #2d466e;
-    --supplier: #f97316;
-    --manufacturer: #6ee7b7;
-    --retailer: #60a5fa;
-    --mono: 'JetBrains Mono', monospace;
-    --sans: 'DM Sans', sans-serif;
+    --bg: #faf7f2;
+    --surface: #ffffff;
+    --surface2: #f3ede4;
+    --border: #e0d8cc;
+    --text: #1c1917;
+    --text-muted: #78716c;
+    --accent: #b45309;
+    --accent-dim: #fef3c7;
+    --red: #dc2626;
+    --red-dim: #fee2e2;
+    --yellow: #d97706;
+    --yellow-dim: #fef9c3;
+    --blue: #1d4ed8;
+    --blue-dim: #dbeafe;
+    --supplier: #c2410c;
+    --manufacturer: #15803d;
+    --retailer: #1d4ed8;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Inter', sans-serif;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -73,7 +73,7 @@
 
   #drop-zone.dragover {
     border-color: var(--accent);
-    background: rgba(110, 231, 183, 0.04);
+    background: rgba(180, 83, 9, 0.04);
   }
 
   #drop-zone p {
@@ -313,7 +313,7 @@
     padding: 10px 12px;
     border-left: 3px solid var(--blue);
     margin-bottom: 8px;
-    background: rgba(96, 165, 250, 0.04);
+    background: rgba(29, 78, 216, 0.04);
     font-size: 13px;
   }
 
@@ -622,8 +622,8 @@ function renderPriceChart(canvasId, neg, run) {
   const maxRound = Math.max(...offers.map(o => o.round), 1);
   const labels = Array.from({ length: maxRound }, (_, i) => `R${i + 1}`);
 
-  const colorA = neg.agentA === 'supplier' ? '#f97316' : '#6ee7b7';
-  const colorB = neg.agentB === 'manufacturer' ? '#6ee7b7' : '#60a5fa';
+  const colorA = neg.agentA === 'supplier' ? '#c2410c' : '#15803d';
+  const colorB = neg.agentB === 'manufacturer' ? '#15803d' : '#1d4ed8';
 
   const datasets = [
     {
@@ -679,7 +679,7 @@ function renderPriceChart(canvasId, neg, run) {
     datasets.push({
       label: 'Deal price',
       data: labels.map(() => neg.finalPrice),
-      borderColor: '#fbbf24',
+      borderColor: '#d97706',
       borderDash: [3, 3],
       pointRadius: 0,
       borderWidth: 2,
@@ -694,18 +694,18 @@ function renderPriceChart(canvasId, neg, run) {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          labels: { color: '#7a7a86', font: { family: "'JetBrains Mono'", size: 11 } }
+          labels: { color: '#78716c', font: { family: "'IBM Plex Mono'", size: 11 } }
         }
       },
       scales: {
-        x: { ticks: { color: '#7a7a86', font: { family: "'JetBrains Mono'", size: 11 } }, grid: { color: '#2a2a32' } },
+        x: { ticks: { color: '#78716c', font: { family: "'IBM Plex Mono'", size: 11 } }, grid: { color: '#e0d8cc' } },
         y: {
           ticks: {
-            color: '#7a7a86',
-            font: { family: "'JetBrains Mono'", size: 11 },
+            color: '#78716c',
+            font: { family: "'IBM Plex Mono'", size: 11 },
             callback: v => '$' + v
           },
-          grid: { color: '#2a2a32' }
+          grid: { color: '#e0d8cc' }
         }
       }
     }
